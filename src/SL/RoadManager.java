@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.awt.*;
 
 import javax.swing.SwingUtilities;
-import javax.swing.JComboBox.KeySelectionManager;
 
 /**
  * This class manages roads and road creation/editing
@@ -16,7 +15,8 @@ import javax.swing.JComboBox.KeySelectionManager;
 public class RoadManager {
 
 	private ArrayList<Road> m_roads;
-
+	private ArrayList<Intersection> m_intersections;
+	
 	/**
 	 * States for creating roads
 	 * @author Diego
@@ -25,13 +25,16 @@ public class RoadManager {
 	{
 		NONE,
 		CREATING_ROAD,
-		FINISH_ROAD_CREATE,
+		INTERSECTING_ROADS,
 	}
 
 	private TOOL_STATE m_toolState = TOOL_STATE.NONE;
 
 	private Point m_currentStart, m_currentEnd;
 
+	// Class for intersection creation data
+	private IntersectTool m_intersectTool;
+	
 	private boolean m_editing = true;
 
 	/**
@@ -40,8 +43,10 @@ public class RoadManager {
 	public RoadManager()
 	{
 		m_roads = new ArrayList<Road>();
+		m_intersections = new ArrayList<Intersection>();
 		m_currentStart = new Point();
 		m_currentEnd = new Point();
+		m_intersectTool = new IntersectTool();
 	}
 
 	/**
@@ -141,7 +146,35 @@ public class RoadManager {
 			System.out.println("Obtained End point: " + pos.x + "," + pos.y);
 			m_currentEnd = pos;
 			break;
-		case FINISH_ROAD_CREATE:
+		case INTERSECTING_ROADS:
+			for (int i = 0; i < m_roads.size(); i++)
+			{
+				if (m_roads.get(i).SelectRoad(pos.x, pos.y, 20))
+				{
+					if (m_intersectTool.road1 == null)
+					{
+						m_intersectTool.road1 = m_roads.get(i);
+						m_roads.get(i).Select(true);
+					}
+					else
+					{
+						// Final road for intersecting has been obtained
+						// So now create the intersection
+						m_intersectTool.road2 = m_roads.get(i);
+						Intersection ci = new Intersection();
+						// Intersect the roads
+						ci.IntersectRoads(m_intersectTool.road1, m_intersectTool.road2);
+						// Deselect road
+						m_intersectTool.road1.Select(false);
+						// Clear the tool
+						m_intersectTool.ClearTool();
+						// Add the intersection object
+						m_intersections.add(ci);
+						// Return to no tool
+						m_toolState = TOOL_STATE.NONE;
+					}
+				}
+			}
 			break;
 		default:
 			Road current = new Road(m_currentStart, m_currentEnd);
@@ -162,6 +195,9 @@ public class RoadManager {
 		switch (m_toolState)
 		{
 		case NONE:
+			// If I is pressed, go into intersecting roads tool
+			if (e.getKeyCode() == KeyEvent.VK_I)
+				m_toolState = TOOL_STATE.INTERSECTING_ROADS;
 			break;
 		case CREATING_ROAD:
 			if (e.getKeyCode() == KeyEvent.VK_ENTER)
@@ -180,7 +216,7 @@ public class RoadManager {
 				m_currentEnd = new Point();
 			}
 			break;
-		case FINISH_ROAD_CREATE:
+		case INTERSECTING_ROADS:
 			break;
 		default:
 			break;
@@ -208,5 +244,28 @@ public class RoadManager {
 	private void drawCircleOutline(Graphics g, int x, int y, int radius)
 	{
 		g.drawOval(x-radius, y-radius, radius*2, radius*2);
+	}
+
+	/**
+	 * TOOL CLASSES 
+	 */
+	// Class for intersect tool
+	private class IntersectTool
+	{
+		public Road road1;
+		public Road road2;
+
+		public IntersectTool()
+		{
+			road1 = null;
+			road2 = null;
+		}
+
+		// Clears the tool state
+		public void ClearTool()
+		{
+			road1 = null;
+			road2 = null;
+		}
 	}
 }
