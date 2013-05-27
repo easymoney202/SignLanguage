@@ -2,6 +2,7 @@ package SL;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 
 /**
  * Sign Language
@@ -48,6 +49,14 @@ public abstract class GameScene {
 	 * Obtains input to the scene
 	 */
 	public void KeyReleased(KeyEvent e)
+	{
+		
+	}
+	
+	/***
+	 *  Called from GamePanel to scenes to use mouse
+	 */
+	public void MouseClick(MouseEvent e)
 	{
 		
 	}

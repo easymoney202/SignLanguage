@@ -22,7 +22,7 @@ public class SignLanguage extends JFrame {
 		Menu, Traffic, HowTo, GameOver
 	};
 
-	public static GAME_STATE m_gameState = GAME_STATE.Menu;
+	public static GAME_STATE m_gameState = GAME_STATE.Traffic;
 
 	public SignLanguage() {
 		Instance = this;
@@ -36,6 +36,8 @@ public class SignLanguage extends JFrame {
 		setResizable(false);
 
 		System.out.println(Instance);
+		
+		m_trafficScene = new TrafficScene();
 
 		GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts();
 
@@ -100,7 +102,7 @@ public class SignLanguage extends JFrame {
 			default:
 				break;
 			}
-
+			
 			m_gamePanel.repaint();
 		}
 	}

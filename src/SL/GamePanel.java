@@ -7,11 +7,13 @@ import java.awt.event.*;
 /**
  * Panel for the game
  */
-public class GamePanel extends JPanel implements ActionListener
+public class GamePanel extends JPanel implements ActionListener, MouseListener
 {
     private static final long serialVersionUID = 1L;
     public static GamePanel Instance;
-    private static Boolean m_initialized = false;
+    private static boolean m_initialized = false;
+    
+    private boolean m_clicking = false;
 
     /**
      * Constructor
@@ -19,9 +21,11 @@ public class GamePanel extends JPanel implements ActionListener
     public GamePanel()
     {
     	addKeyListener(new InputAdapter());
+    	addMouseListener(this);
     	setFocusable(true);
     	setBackground(Color.BLACK);
     	setDoubleBuffered(true);
+    	
     	if (m_initialized == false)
     	{
     		Instance = this;
@@ -80,5 +84,44 @@ public class GamePanel extends JPanel implements ActionListener
     			currentScene.KeyReleased(e);
     	}
     }
+
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+		// TODO Auto-generated method stub
+		if (m_clicking == false)
+		{
+			System.out.println("Clicked!");
+			GameScene currentScene = SignLanguage.Instance.GetCurrentScene();
+		
+			if (currentScene != null)
+				currentScene.MouseClick(e);
+			
+			m_clicking = true;
+		}
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		// TODO Auto-generated method stub
+		m_clicking = false;
+	}
 }
 
