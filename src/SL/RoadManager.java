@@ -173,6 +173,12 @@ public class RoadManager {
 				m_currentStart = new Point();
 				m_currentEnd = new Point();
 			}
+			else if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
+			{
+				m_toolState = TOOL_STATE.NONE;
+				m_currentStart = new Point();
+				m_currentEnd = new Point();
+			}
 			break;
 		case FINISH_ROAD_CREATE:
 			break;
