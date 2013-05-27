@@ -49,17 +49,33 @@ public class Road {
 		System.out.println(m_sampling);
 	}
 	
+	/**
+	 * Returns the end point
+	 * @return
+	 */
+	public Point GetEndPoint()
+	{
+		return m_end;
+	}
+	
+	/**
+	 * Returns the start point
+	 * @return
+	 */
+	public Point GetStartPoint()
+	{
+		return m_start;
+	}
+	
 	public void paintSidewalk(Graphics g)
 	{
+		Graphics2D g2d = (Graphics2D) g;
 		g.setColor(new Color(130, 130, 130));
-		Point step = new Point();
-		step.x = (int) Math.ceil((m_end.x - m_start.x) / m_sampling);
-		step.y = (int) Math.ceil((m_end.y - m_start.y) / m_sampling);
+		g2d.setStroke(new BasicStroke(45));
+		g.drawLine(m_start.x, m_start.y, m_end.x, m_end.y);
 		
-		for (int i = 0; i < m_sampling; i++)
-		{
-			drawCircle(g,m_start.x + step.x * i, m_start.y + step.y * i, 30);
-		}
+		// Return stroke to normal
+		g2d.setStroke(new BasicStroke(1));
 	}
 	
 	/**
@@ -68,17 +84,13 @@ public class Road {
 	 */
 	public void paintRoad(Graphics g)
 	{
+		Graphics2D g2d = (Graphics2D) g;
 		g.setColor(new Color(100, 100, 100));
-		Point step = new Point();
-		step.x = (int) Math.ceil((m_end.x - m_start.x) / m_sampling);
-		step.y = (int) Math.ceil((m_end.y - m_start.y) / m_sampling);
 		
-		System.out.println("Step: " + step.x + "," + step.y); 
-		
-		for (int i = 0; i < m_sampling; i++)
-		{
-			drawCircle(g,m_start.x + step.x * i, m_start.y + step.y * i, 20);
-		}
+		g2d.setStroke(new BasicStroke(30));
+		g.drawLine(m_start.x, m_start.y, m_end.x, m_end.y);
+		// Return stroke to normal
+		g2d.setStroke(new BasicStroke(1));
 	}
 	
 	/**
@@ -89,6 +101,6 @@ public class Road {
 	 * @param radius
 	 */
 	private void drawCircle(Graphics g, int x, int y, int radius) {
-		   g.fillOval(x-radius, y-radius, radius*2, radius*2);
+		g.fillOval(x-radius, y-radius, radius*2, radius*2);
 	}
 }
