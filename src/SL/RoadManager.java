@@ -137,13 +137,11 @@ public class RoadManager {
 		switch (m_toolState)
 		{
 		case NONE:
-			System.out.println("Obtained Start point: " + pos.x + "," + pos.y);
 			m_toolState = TOOL_STATE.CREATING_ROAD;
 			// Now get the roads first point
 			m_currentStart = pos;
 			break;
 		case CREATING_ROAD:
-			System.out.println("Obtained End point: " + pos.x + "," + pos.y);
 			m_currentEnd = pos;
 			break;
 		case INTERSECTING_ROADS:
@@ -172,6 +170,8 @@ public class RoadManager {
 						m_intersections.add(ci);
 						// Return to no tool
 						m_toolState = TOOL_STATE.NONE;
+						
+						System.out.println("Created an intersection!");
 					}
 				}
 			}
@@ -197,6 +197,7 @@ public class RoadManager {
 		case NONE:
 			// If I is pressed, go into intersecting roads tool
 			if (e.getKeyCode() == KeyEvent.VK_I)
+				System.out.println("Intersection Tool: ON");
 				m_toolState = TOOL_STATE.INTERSECTING_ROADS;
 			break;
 		case CREATING_ROAD:
@@ -208,15 +209,23 @@ public class RoadManager {
 				m_toolState = TOOL_STATE.NONE;
 				m_currentStart = new Point();
 				m_currentEnd = new Point();
+				System.out.println("Created a road!");
 			}
 			else if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
 			{
 				m_toolState = TOOL_STATE.NONE;
 				m_currentStart = new Point();
 				m_currentEnd = new Point();
+				System.out.println("Create Tool: Reset");
 			}
 			break;
 		case INTERSECTING_ROADS:
+			if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
+			{
+				m_intersectTool.ClearTool();
+				m_toolState = TOOL_STATE.NONE;
+				System.out.println("Intersection Tool: OFF");
+			}
 			break;
 		default:
 			break;

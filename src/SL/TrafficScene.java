@@ -87,7 +87,6 @@ public class TrafficScene extends GameScene {
 	 * Obtains input to the scene
 	 */
 	public void KeyPressed(KeyEvent e) {
-		System.out.println("Key pressed: " + e.getKeyChar());
 		m_roadMgr.KeyPressed(e);
 	}
 
@@ -95,7 +94,6 @@ public class TrafficScene extends GameScene {
 	 * Obtains input to the scene
 	 */
 	public void KeyReleased(KeyEvent e) {
-		System.out.println("Key released: " + e.getKeyChar());
 	}
 	
 	/***

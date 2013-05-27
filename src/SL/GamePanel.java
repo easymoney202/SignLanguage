@@ -108,7 +108,6 @@ public class GamePanel extends JPanel implements ActionListener, MouseListener
 		// TODO Auto-generated method stub
 		if (m_clicking == false)
 		{
-			System.out.println("Clicked!");
 			GameScene currentScene = SignLanguage.Instance.GetCurrentScene();
 		
 			if (currentScene != null)
