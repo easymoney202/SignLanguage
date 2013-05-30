@@ -11,6 +11,8 @@ import java.util.Random;
 import javax.imageio.ImageIO;
 import javax.swing.SwingUtilities;
 
+import SL.Road.SignType;
+
 /**
  * Defines all the logic for the Explore scene
  * 
@@ -22,7 +24,16 @@ public class TrafficScene extends GameScene {
 	private Image m_background;
 	private Image m_hudBar;
 	
+	private Button m_stopBtn;
+	private Button m_stopAWBtn;
+	private Button m_owRightBtn;
+	private Button m_owLeftBtn;
+	private Button m_owUpBtn;
+	private Button m_owDownBtn;
+	
 	private RoadManager m_roadMgr;
+	
+	private SignType m_signSelected = SignType.NONE;
 	
 	/**
 	 * Constructor
@@ -41,6 +52,13 @@ public class TrafficScene extends GameScene {
 		} catch (Exception ex) {
 			System.out.println("Failed to load Traffic Scene images");
 		}
+		
+		m_stopBtn = new Button("Stop", "Images/stop_btn.png", new Point(610, 100));
+		m_stopAWBtn = new Button("Stop AW", "Images/stopaw_btn.png", new Point(710, 100));
+		m_owRightBtn = new Button("OW Right", "Images/ow_right_btn.png", new Point(610, 300));
+		m_owLeftBtn = new Button("OW Left", "Images/ow_left_btn.png", new Point(710, 300));
+		m_owUpBtn = new Button("OW Up", "Images/ow_up_btn.png", new Point(610, 400));
+		m_owDownBtn = new Button("OW Down", "Images/ow_down_btn.png", new Point(710, 400));
 	}
 
 	/**
@@ -49,8 +67,14 @@ public class TrafficScene extends GameScene {
 	 * @param g
 	 */
 	public void DrawHUD(Graphics g) {
-		Graphics2D g2 = (Graphics2D) g;
 		g.drawImage(m_hudBar, 600, 0, null);
+		
+		m_stopBtn.paint(g);
+		m_stopAWBtn.paint(g);
+		m_owRightBtn.paint(g);
+		m_owLeftBtn.paint(g);
+		m_owUpBtn.paint(g);
+		m_owDownBtn.paint(g);
 	}
 
 	/**
@@ -99,12 +123,53 @@ public class TrafficScene extends GameScene {
 	 */
 	public void KeyReleased(KeyEvent e) {
 	}
-	
+
 	/***
 	 *  Mouse clicks!
 	 */
 	public void MouseClick(MouseEvent e)
 	{
-		m_roadMgr.MouseClick(e);
+
+		// Left click
+		if (e.getButton() == MouseEvent.BUTTON1)
+		{
+			// Check all buttons
+			if (m_stopBtn.IsClicked(e.getPoint()))
+			{
+				m_signSelected = SignType.STOP;
+			}
+
+			if (m_stopAWBtn.IsClicked(e.getPoint()))
+			{
+				m_signSelected = SignType.STOP_AW;
+			}
+
+			if (m_owUpBtn.IsClicked(e.getPoint()))
+			{
+				m_signSelected = SignType.UP;
+			}
+
+			if (m_owDownBtn.IsClicked(e.getPoint()))
+			{
+				m_signSelected = SignType.DOWN;
+			}
+
+			if (m_owLeftBtn.IsClicked(e.getPoint()))
+			{
+				m_signSelected = SignType.LEFT;
+			}
+
+			if (m_owRightBtn.IsClicked(e.getPoint()))
+			{
+				m_signSelected = SignType.RIGHT;
+			}
+			
+			m_roadMgr.MouseClick(e, m_signSelected);
+		}
+		else if (e.getButton() == MouseEvent.BUTTON3)
+		{
+			// Right click roads to take out signs
+			m_roadMgr.MouseClick(e, SignType.NONE);
+		}
 	}
 }

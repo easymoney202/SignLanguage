@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.awt.*;
 import javax.swing.SwingUtilities;
 import SL.Road.RoadType;
+import SL.Road.SignType;
 
 /**
  * This class manages roads and road creation/editing
@@ -46,10 +47,8 @@ public class RoadManager {
 					Point pos = new Point(x,y);
 					int type = (level[y][x]-1)/4;
 					int rot = (level[y][x]-1)%4;
-					System.out.println("Pos: " + x + "," + y + "; Value: " + level[y][x]);
-					System.out.println("Type: " + type);
-					System.out.println("Rot: " + rot);
 					RoadType r_type = null;
+					
 					switch (type)
 					{
 					case 0:
@@ -79,10 +78,6 @@ public class RoadManager {
 	public RoadManager()
 	{
 		m_roads = new ArrayList<Road>();
-		Point pos = new Point();
-		pos.x = 2;
-		pos.y = 1;
-
 		GenerateLevel();
 	}
 
@@ -111,8 +106,15 @@ public class RoadManager {
 
 	}
 
-	public void MouseClick(MouseEvent e)
+	// Sets signs on the road
+	public void MouseClick(MouseEvent e, SignType sign)
 	{
-
+		for (int i = 0; i < m_roads.size(); i++)
+		{
+			if (m_roads.get(i).IsClicked(e.getPoint()))
+			{
+				m_roads.get(i).SetSign(sign);
+			}
+		}
 	}
 }
