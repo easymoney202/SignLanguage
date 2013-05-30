@@ -2,6 +2,9 @@ package SL;
 
 import java.awt.*;
 import java.awt.geom.Line2D;
+import java.io.File;
+
+import javax.imageio.ImageIO;
 
 /**
  * Defines a road object, this will also handle painting it
@@ -10,150 +13,77 @@ import java.awt.geom.Line2D;
  * @author Diego, Matt & Zac
  */
 public class Road {
-	enum ROAD_TYPE
+	// Type of road
+	enum RoadType
 	{
 		STRAIGHT,
-		CURVE
+		CURVE,
+		INT_3,
+		INT_4
 	}
 
-	// Start and end points of the road
-	Point m_start, m_end;
-	// Intersection to which the road belongs
-	// Intersections will only take the end point of the road
-	// to be able to connect cars to the other starting roads
-	// no need for having two intersections
-	Intersection m_intersection;
-	
-	// This boolean is used to know if the road is being selected by
-	// a tool to highlight it in red
-	boolean m_selected;
-	
-	// Line object used to check mouse selection of roads
-	Line2D m_roadLine;
+	private static Image m_img = null;
+	private Point m_position;
+	private RoadType m_type;
+	private int m_rotation = 0;;
 
-	public Road(Point start, Point end)
-	{
-		m_start = start;
-		m_end = end;
-		m_selected = false;
-		
-		System.out.println(end.toString() + "," + start.toString());
-		
-		// Sets the Line2D object
-		m_roadLine = new Line2D.Float();
-		m_roadLine.setLine(m_start, m_end);
-	}
+	public boolean Occupied = false;;
 
 	/**
-	 * Returns the end point
-	 * @return
+	 * Constructor
+	 * @param type
 	 */
-	public Point GetEndPoint()
+	public Road(RoadType type, int rot, Point pos)
 	{
-		return m_end;
-	}
+		if (m_img == null)
+		{
+			try
+			{
+				File imgFile = new File("Images/120x120_slim_tiles.png");
+				m_img = ImageIO.read(imgFile);
+			}
+			catch (Exception e){}
+		}
 
-	/**
-	 * Sets an end point for a road
-	 * this is used in the Intersection class only
-	 * @return
-	 */
-	public void SetEndPoint(Point end)
-	{
-		m_end = end;
-	}
-
-	/**
-	 * Returns the start point
-	 * @return
-	 */
-	public Point GetStartPoint()
-	{
-		return m_start;
-	}
-	
-	/**
-	 * Sets the start point for a road
-	 * only used in Intersection class
-	 * @param start
-	 */
-	public void SetStartPoint(Point start)
-	{
-		m_start = start;
-	}
-	
-	/**
-	 * Selects/Deselects the road to be highlighted
-	 * @param flag
-	 */
-	public void Select(boolean flag)
-	{
-		m_selected = flag;
-	}
-
-	public void paintSidewalk(Graphics g)
-	{
-		Graphics2D g2d = (Graphics2D) g;
-		if (m_selected)
-			g.setColor(new Color(250, 0, 0));
-		else
-			g.setColor(new Color(130, 130, 130));
-		g2d.setStroke(new BasicStroke(45));
-		g.drawLine(m_start.x, m_start.y, m_end.x, m_end.y);
-
-		// Return stroke to normal
-		g2d.setStroke(new BasicStroke(1));
+		m_type = type;
+		m_rotation = rot;
+		m_position = new Point();
+		m_position.x = pos.x * RoadManager.TILE_SIZE;
+		m_position.y = pos.y * RoadManager.TILE_SIZE;
 	}
 
 	/**
 	 * Paints the road
 	 * @param g
 	 */
-	public void paintRoad(Graphics g)
+	public void paint (Graphics g)
 	{
-		Graphics2D g2d = (Graphics2D) g;
-		g.setColor(new Color(100, 100, 100));
-
-		g2d.setStroke(new BasicStroke(30));
-		g.drawLine(m_start.x, m_start.y, m_end.x, m_end.y);
-		// Return stroke to normal
-		g2d.setStroke(new BasicStroke(1));
-	}
-	
-	/**
-	 * Sets the intersection of this road
-	 * @param i
-	 */
-	public void SetIntersection(Intersection i)
-	{
-		m_intersection = i;
-	}
-	
-	/**
-	 * Returns the intersection that this road belongs to
-	 * @return
-	 */
-	public Intersection GetIntersection()
-	{
-		return m_intersection;
-	}
-	
-	/**
-	 * This method checks if a line is clicked
-	 * @param x
-	 * @param y
-	 * @param box_size Size of the bounding box for checking collision
-	 * @return true if the road matches the mouse
-	 */
-	public boolean SelectRoad(int x, int y, int box_size)
-	{
-		boolean result = false;
-		int boxX = x - box_size / 2;
-		int boxY = y - box_size / 2;
-
-		int width = box_size;
-		int height = box_size;	
+		int x_offset = 0;
+		switch (m_type)
+		{
+		case STRAIGHT:
+			x_offset = 0;
+			break;
+		case CURVE:
+			x_offset = 1;
+			break;
+		case INT_3:
+			x_offset = 2;
+			break;
+		case INT_4:
+			x_offset = 3;
+			break;
+		default:
+			break;
+		}
 		
-		return m_roadLine.intersects(boxX, boxY, width, height);
+		// Source cut
+		int x_pos = x_offset * RoadManager.TILE_SIZE;
+		int y_pos = m_rotation * RoadManager.TILE_SIZE;
+		int x_epos = x_pos + RoadManager.TILE_SIZE;
+		int y_epos = y_pos + RoadManager.TILE_SIZE;
+		
+		g.drawImage(m_img, m_position.x, m_position.y, m_position.x + RoadManager.TILE_SIZE,
+					m_position.y + RoadManager.TILE_SIZE, x_pos, y_pos, x_epos, y_epos, null);
 	}
 }

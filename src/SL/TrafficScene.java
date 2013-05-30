@@ -20,6 +20,7 @@ public class TrafficScene extends GameScene {
 
 	private String m_statusMsg;
 	private Image m_background;
+	private Image m_hudBar;
 	
 	private RoadManager m_roadMgr;
 	
@@ -33,10 +34,12 @@ public class TrafficScene extends GameScene {
 		m_roadMgr = new RoadManager();
 		m_statusMsg = "Status: None";
 		try {
-			File imageFile = new File("Images/traffic_bg.png");
+			File imageFile = new File("Images/BG1.png");
 			m_background = ImageIO.read(imageFile);
+			imageFile = new File("Images/HUDBar.png");
+			m_hudBar = ImageIO.read(imageFile);
 		} catch (Exception ex) {
-			System.out.println("Failed to load Traffic image");
+			System.out.println("Failed to load Traffic Scene images");
 		}
 	}
 
@@ -47,6 +50,7 @@ public class TrafficScene extends GameScene {
 	 */
 	public void DrawHUD(Graphics g) {
 		Graphics2D g2 = (Graphics2D) g;
+		g.drawImage(m_hudBar, 600, 0, null);
 	}
 
 	/**

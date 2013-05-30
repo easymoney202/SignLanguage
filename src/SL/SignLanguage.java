@@ -9,8 +9,8 @@ public class SignLanguage extends JFrame {
 	public static Boolean m_running = true;
 	public static GamePanel m_gamePanel;
 	public static SignLanguage Instance = null;
-	public static Integer WINDOW_WIDTH = 640;
-	public static Integer WINDOW_HEIGHT = 500;
+	public static Integer WINDOW_WIDTH = 800;
+	public static Integer WINDOW_HEIGHT = 600;
 	public static Integer NUM_ROOMS = 10;
 
 	MenuScene m_menuScene;
@@ -22,7 +22,7 @@ public class SignLanguage extends JFrame {
 		Menu, Traffic, HowTo, GameOver
 	};
 
-	public static GAME_STATE m_gameState = GAME_STATE.Traffic;
+	public static GAME_STATE m_gameState = GAME_STATE.Menu;
 
 	public SignLanguage() {
 		Instance = this;
@@ -38,6 +38,7 @@ public class SignLanguage extends JFrame {
 		System.out.println(Instance);
 		
 		m_trafficScene = new TrafficScene();
+		m_menuScene = new MenuScene();
 
 		GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts();
 
