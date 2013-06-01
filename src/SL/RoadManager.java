@@ -78,6 +78,8 @@ public class RoadManager {
 		// Set the top tile as spawn point to test
 		m_roads[0][0].SetSpawnPoint(true);
 		m_roads[0][0].Frequency = 2;
+		m_roads[0][0].SetSign(SignType.RIGHT);
+		m_roads[0][0].SignVisible = false;
 	}
 
 	public RoadManager()
@@ -118,6 +120,16 @@ public class RoadManager {
 	 */
 	public Road GetRoad(int x, int y)
 	{
+		// Make sure we don't screw the array
+		if (x < 0)
+			x = 0;
+		if (y < 0)
+			y = 0;
+		if (x >= 5)
+			x = 4;
+		if (y >= 5)
+			y = 4;
+		
 		return m_roads[y][x];
 	}
 	

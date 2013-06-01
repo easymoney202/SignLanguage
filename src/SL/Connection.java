@@ -63,6 +63,34 @@ public class Connection {
 	}
 	
 	/**
+	 * Sets the connection as an input
+	 * only if it is not NONE
+	 */
+	public void SetAsInput()
+	{
+		if (Type != ConType.NONE)
+			Type = ConType.IN;
+	}
+	
+	/**
+	 * Set as OUT if possible
+	 */
+	public void SetAsOutput()
+	{
+		if (Type != ConType.NONE)
+			Type = ConType.OUT;
+	}
+	
+	/**
+	 * Set as IN_OUT if possible
+	 */
+	public void SetAsInOut()
+	{
+		if (Type != ConType.NONE)
+			Type = ConType.IN_OUT;
+	}
+	
+	/**
 	 * Returns a string with info of the connection
 	 * @return
 	 */
