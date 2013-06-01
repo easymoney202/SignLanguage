@@ -40,6 +40,7 @@ public class Road {
 
 	private static Image m_img = null;
 	private Point m_position;
+	private Point m_tilePos;
 	private RoadType m_type;
 	private int m_rotation = 0;
 	private boolean m_delay = false;
@@ -96,6 +97,7 @@ public class Road {
 
 		m_rotation = rot;
 		m_position = new Point();
+		m_tilePos = pos;
 		m_position.x = pos.x * RoadManager.TILE_SIZE;
 		m_position.y = pos.y * RoadManager.TILE_SIZE;
 		m_sign = SignType.NONE;
@@ -307,23 +309,51 @@ public class Road {
 	
 	private Road GetOutputRoad()
 	{
+		System.out.println("Getting output road for road " + m_tilePos.x + "," + m_tilePos.y);
+		
 		if (m_uCon.Type == ConType.OUT)
-			return m_manager.GetRoad(m_position.x, m_position.y -1);
+		{
+			System.out.println("UP: OUT");
+			return m_manager.GetRoad(m_tilePos.x, m_tilePos.y -1);
+		}
 		if (m_dCon.Type == ConType.OUT)
-			return m_manager.GetRoad(m_position.x, m_position.y +1);
+		{
+			System.out.println("DOWN: OUT");
+			return m_manager.GetRoad(m_tilePos.x, m_tilePos.y +1);
+		}
 		if (m_lCon.Type == ConType.OUT)
-			return m_manager.GetRoad(m_position.x-1, m_position.y);
+		{
+			System.out.println("LEFT: OUT");
+			return m_manager.GetRoad(m_tilePos.x-1, m_tilePos.y);
+		}
 		if (m_rCon.Type == ConType.OUT)
-			return m_manager.GetRoad(m_position.x+1, m_position.y);
+		{
+			System.out.println("RIGHT: OUT");
+			return m_manager.GetRoad(m_tilePos.x+1, m_tilePos.y);
+		}
 		
 		if (m_uCon.Type == ConType.IN_OUT)
-			return m_manager.GetRoad(m_position.x, m_position.y -1);
+		{
+			System.out.println("UP: IN_OUT");
+			return m_manager.GetRoad(m_tilePos.x, m_tilePos.y -1);
+		}
 		if (m_dCon.Type == ConType.IN_OUT)
-			return m_manager.GetRoad(m_position.x, m_position.y +1);
+		{
+			System.out.println("DOWN: IN_OUT");
+			return m_manager.GetRoad(m_tilePos.x, m_tilePos.y +1);
+		}
 		if (m_lCon.Type == ConType.IN_OUT)
-			return m_manager.GetRoad(m_position.x - 1, m_position.y);
+		{
+			System.out.println("LEFT: IN_OUT");
+			return m_manager.GetRoad(m_tilePos.x - 1, m_tilePos.y);
+		}
 		if (m_rCon.Type == ConType.IN_OUT)
-			return m_manager.GetRoad(m_position.x + 1, m_position.y);
+		{
+			System.out.println("RIGHT: IN_OUT");
+			return m_manager.GetRoad(m_tilePos.x + 1, m_tilePos.y);
+		}
+		
+		System.out.println("Didn't get any road!");
 		
 		return null;
 	}
@@ -343,19 +373,20 @@ public class Road {
 		switch(m_sign)
 		{
 		case UP:
-			nextRoad = m_manager.GetRoad(m_position.x, m_position.y - 1);
+			nextRoad = m_manager.GetRoad(m_tilePos.x, m_tilePos.y - 1);
 			break;
 		case DOWN:
-			nextRoad = m_manager.GetRoad(m_position.x, m_position.y + 1);
+			nextRoad = m_manager.GetRoad(m_tilePos.x, m_tilePos.y + 1);
 			break;
 		case LEFT:
-			nextRoad = m_manager.GetRoad(m_position.x - 1, m_position.y);
+			nextRoad = m_manager.GetRoad(m_tilePos.x - 1, m_tilePos.y);
 			break;
 		case RIGHT:
-			System.out.println("Getting RIGHT road");
-			nextRoad = m_manager.GetRoad(m_position.x + 1, m_position.y);
+			nextRoad = m_manager.GetRoad(m_tilePos.x + 1, m_tilePos.y);
 		default:
 			nextRoad = GetOutputRoad();
+			if (nextRoad != null)
+				System.out.println("Got road: " + nextRoad.m_tilePos.x + "," + nextRoad.m_tilePos.y);
 			break;
 		}
 
