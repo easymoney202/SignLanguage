@@ -28,9 +28,10 @@ public class RoadManager {
 			{0,2,7,13,1},
 			{0,2,0,2,0},
 			{0,2,0,2,0}};
-
-	private ArrayList<Road> m_roads;
-
+	
+	private Road m_roads[][];
+	
+	public int CurrentTurn = 0;
 
 	/**
 	 * Generates all roads based on the level array
@@ -66,18 +67,22 @@ public class RoadManager {
 						break;
 					}
 
-					cr = new Road(r_type, rot, pos);
+					cr = new Road(r_type, rot, pos, this);
 
 					if (cr != null)
-						m_roads.add(cr);
+						m_roads[y][x] = cr;
 				}
 			}
 		}
+		
+		// Set the top tile as spawn point to test
+		m_roads[0][0].SetSpawnPoint(true);
+		m_roads[0][0].Frequency = 2;
 	}
 
 	public RoadManager()
 	{
-		m_roads = new ArrayList<Road>();
+		m_roads = new Road[5][5];
 		GenerateLevel();
 	}
 
@@ -95,25 +100,73 @@ public class RoadManager {
 	// Paints the roads
 	public void paint(Graphics g)
 	{
-		for (int i = 0; i < m_roads.size(); i++)
+		for (int i = 0; i < 5; i++)
 		{
-			m_roads.get(i).paint(g);
+			for (int j = 0; j < 5; j++)
+			{
+				if (m_roads[i][j] != null)
+					m_roads[i][j].paint(g);
+			}
 		}
 	}
+	
+	/**
+	 * Gets a road in a position
+	 * @param x x position
+	 * @param y y position
+	 * @return
+	 */
+	public Road GetRoad(int x, int y)
+	{
+		return m_roads[y][x];
+	}
+	
+	/**
+	 * Process a "Turn" in which cars moves
+	 */
+	public void ProcessTurn()
+	{
+		for (int i = 0; i < 5; i++)
+		{
+			for (int j = 0; j < 5; j++)
+			{
+				if (m_roads[i][j] != null)
+				{
+					// Process the turn for each road
+					m_roads[i][j].ProcessTurn();
+				}
+			}
+		}
+		
+		// Add one to the current turn
+		CurrentTurn++;
+	}
 
+	/**
+	 * Handles key presses
+	 * @param e
+	 */
 	public void KeyPressed(KeyEvent e)
 	{
-
+		if (e.getKeyCode() == KeyEvent.VK_ENTER)
+		{
+			// Process a turn (TEST FOR NOW)
+			ProcessTurn();
+		}
 	}
 
 	// Sets signs on the road
 	public void MouseClick(MouseEvent e, SignType sign)
 	{
-		for (int i = 0; i < m_roads.size(); i++)
+		for (int i = 0; i < 5; i++)
 		{
-			if (m_roads.get(i).IsClicked(e.getPoint()))
+			for (int j = 0; j < 5; j++)
 			{
-				m_roads.get(i).SetSign(sign);
+				if (m_roads[i][j] != null)
+				{
+					if (m_roads[i][j].IsClicked(e.getPoint()))
+						m_roads[i][j].SetSign(sign);
+				}
 			}
 		}
 	}

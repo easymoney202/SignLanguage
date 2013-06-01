@@ -6,6 +6,8 @@ import java.io.File;
 
 import javax.imageio.ImageIO;
 
+import SL.Connection.ConDir;
+
 /**
  * Defines a road object, this will also handle painting it
  * Roads will be defined with formulas for painting it
@@ -37,7 +39,11 @@ public class Road {
 	private static Image m_img = null;
 	private Point m_position;
 	private RoadType m_type;
-	private int m_rotation = 0;;
+	private int m_rotation = 0;
+	
+	// IsSpawn and spawn frequency (Turn wise)
+	public boolean IsSpawn = false;
+	public int Frequency = 0;
 
 	public boolean Occupied = false;
 	public boolean HasSign = false;
@@ -52,24 +58,16 @@ public class Road {
 	
 	private Image m_currentSign = null;
 	
+	private Connection m_uCon, m_dCon, m_lCon, m_rCon;
+	
+	private RoadManager m_manager;
 
 	/**
 	 * Constructor
 	 * @param type
 	 */
-	public Road(RoadType type, int rot, Point pos)
+	public Road(RoadType type, int rot, Point pos, RoadManager manager)
 	{
-		/*
-		if (m_img == null)
-		{
-			try
-			{
-				File imgFile = new File("Images/120x120_slim_tiles.png");
-				m_img = ImageIO.read(imgFile);
-			}
-			catch (Exception e){}
-		}*/
-		
 		if (m_img == null)
 			m_img = LoadImage("Images/120x120_slim_tiles.png");
 		
@@ -85,15 +83,31 @@ public class Road {
 			m_owLeft = LoadImage("Images/oneway_left.png");
 		if (m_owRight == null)
 			m_owRight = LoadImage("Images/oneway_right.png");
-		
-		
 
-		m_type = type;
 		m_rotation = rot;
 		m_position = new Point();
 		m_position.x = pos.x * RoadManager.TILE_SIZE;
 		m_position.y = pos.y * RoadManager.TILE_SIZE;
 		m_sign = SignType.NONE;
+		m_manager = manager;
+		
+		m_type = type;
+		// Initialize logic for the instructions of the type
+		m_uCon = new Connection(ConDir.UP);
+		m_dCon = new Connection(ConDir.DOWN);
+		m_lCon = new Connection(ConDir.LEFT);
+		m_rCon = new Connection(ConDir.RIGHT);
+	}
+	
+	/**
+	 * Sets this road as a spawn point for cars
+	 * @param flag
+	 */
+	void SetSpawnPoint(boolean flag)
+	{
+		IsSpawn = flag;
+		
+		// Initialize data here
 	}
 
 	/**
@@ -187,6 +201,25 @@ public class Road {
 			m_currentSign = null;
 			break;
 		}
+	}
+	
+	/**
+	 * Processes a turn for the cars movement and sign control
+	 */
+	public void ProcessTurn()
+	{
+		if (IsSpawn)
+		{
+			if (!Occupied && m_manager.CurrentTurn % Frequency == 0)
+			{
+				// This turn we should spawn a car
+				Occupied = true;
+				
+				System.out.println("Car has spawned!");
+				// TO-DO: Add car creation
+			}
+		}
+		
 	}
 		
 
