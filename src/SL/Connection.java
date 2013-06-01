@@ -13,6 +13,8 @@ public class Connection {
 		OUT,
 		// No direction define, cars go straight
 		IN_OUT,
+		// No connection to that tile
+		NONE,
 	}
 
 	// Direction of connection (Where in the tile)
@@ -57,6 +59,27 @@ public class Connection {
 			return ConDir.LEFT;
 		default:
 			return ConDir.NONE;
+		}
+	}
+	
+	/**
+	 * Returns a string with info of the connection
+	 * @return
+	 */
+	public String ToString()
+	{
+		switch(Type)
+		{
+		case IN_OUT:
+			return "IN_OUT";
+		case IN:
+			return "IN";
+		case OUT:
+			return "OUT";
+		case NONE:
+			return "NONE";
+		default:
+			return "";
 		}
 	}
 }
