@@ -479,19 +479,25 @@ public class Road {
 			else
 				NROccupied = false;
 			
-			if(!LROccupied && !RROccupied && !NROccupied)
+			if(!LROccupied && !RROccupied && !NROccupied) {
 				stop_delay = false;
+				//System.out.println("The car at " + m_tilePos.x + " " + m_tilePos.y + "is free to go");
+			}
+			//else
+				//System.out.println("The car at " + m_tilePos.x + " " + m_tilePos.y + "is blocked");
 			
 		}
-		if(at_sign_delay) {
+		else if(at_sign_delay) {
 			//at_sign_delay = false;
 			stop_delay = true;
+			//System.out.println("The car at " + m_tilePos.x + " " + m_tilePos.y + "is stopping");
 		}
 
 		// Move "car"
 		// for great justice
 		if(nextRoad == null) {
-			Occupied = false;		
+			Occupied = false;
+			//TODO: Car blows up offscreen
 		}
 		//If we're at a stop sign, need to look to the left and right of next road for occupation
 		else if(!stop_delay){
@@ -503,24 +509,24 @@ public class Road {
 			else if (nextRoad != null && nextRoad.m_tilePos == this.m_tilePos)
 			{
 				// End of map, let cars go
-				System.out.println("Car leaving the map");
+				//System.out.println("Car leaving the map");
 				Occupied = false;
 			}
 			//You don't hit a guy waiting at a stop sign
 			else if(Occupied == true && nextRoad.Occupied == true && nextRoad.m_sign == SignType.STOP) {
 				stop_delay = true;
-				System.out.println("Waiting for a guy at " + m_tilePos.x + " " + m_tilePos.y);
+				//System.out.println("Waiting for a guy at " + m_tilePos.x + " " + m_tilePos.y);
 			}
 			//If he end waiting for someone, he's fair game
 			else if(Occupied == true && nextRoad.Occupied == true && nextRoad.stop_delay == false) {
-				System.out.println("Found a collision at " + m_tilePos.x + " " + m_tilePos.y);
+				//System.out.println("Found a collision at " + m_tilePos.x + " " + m_tilePos.y);
 				Explosion = true;
 				Occupied = false;
 				nextRoad.Occupied = false;
 			}
 			//If the guy in front of you is waiting on someone, wait on him
 			else if(Occupied == true && nextRoad.Occupied == true && nextRoad.stop_delay == true) {
-				System.out.println("Waiting for a guy waiting for a guy at " + m_tilePos.x + " " + m_tilePos.y);
+				//System.out.println("Waiting for a guy waiting for a guy at " + m_tilePos.x + " " + m_tilePos.y);
 				stop_delay = true;
 			}
 			else if (Explosion == false && nextRoad != null && nextRoad.Occupied == false)
@@ -612,23 +618,19 @@ public class Road {
 				at_sign_delay = false;
 			else if (Occupied == true && m_sign == SignType.STOP && !m_delay)
 			{
-				System.out.println("Found a stop sign at " + m_tilePos.x + " " + m_tilePos.y);
+				//System.out.println("Found a stop sign at " + m_tilePos.x + " " + m_tilePos.y);
 				at_sign_delay = true;
 			}
 			
 			// Move car here
 			ProcessCarMovement();
-			if(Occupied) {
-				if(m_sign == SignType.STOP)
-					System.out.println("Wtaf man222");
-			}
 
 			// Delay every turn
-			if (Occupied == true && m_sign == SignType.STOP && !m_delay)
+			/*if (Occupied == true && m_sign == SignType.STOP && !m_delay)
 			{
 				System.out.println("Found a stop sign at " + m_tilePos.x + " " + m_tilePos.y);
 				m_delay = true;
-			}
+			} */
 		}
 		
 		SanityCheck();
