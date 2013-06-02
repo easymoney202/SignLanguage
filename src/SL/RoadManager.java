@@ -166,11 +166,11 @@ public class RoadManager {
 	 */
 	public void KeyPressed(KeyEvent e)
 	{
-		if (e.getKeyCode() == KeyEvent.VK_ENTER)
-		{
+		//if (e.getKeyCode() == KeyEvent.VK_ENTER)
+		//{
 			// Process a turn (TEST FOR NOW)
-			ProcessTurn();
-		}
+		//	ProcessTurn();
+		//}
 	}
 
 	// Sets signs on the road
@@ -184,6 +184,8 @@ public class RoadManager {
 				{
 					if (m_roads[i][j].IsClicked(e.getPoint()))
 						m_roads[i][j].SetSign(sign);
+					if (e.getButton() == MouseEvent.BUTTON2)
+						m_roads[i][j].DumpConnectionInfo();
 				}
 			}
 		}

@@ -124,26 +124,26 @@ public class Road {
 		case STRAIGHT:
 			m_uCon.Type = ConType.NONE;
 			m_dCon.Type = ConType.NONE;
-			m_lCon.Type = ConType.IN_OUT;
-			m_rCon.Type = ConType.IN_OUT;
+			m_lCon.Type = ConType.OUT;
+			m_rCon.Type = ConType.OUT;
 			break;
 		case CURVE:
 			m_uCon.Type = ConType.NONE;
-			m_dCon.Type = ConType.IN_OUT;
-			m_lCon.Type = ConType.IN_OUT;
+			m_dCon.Type = ConType.OUT;
+			m_lCon.Type = ConType.OUT;
 			m_rCon.Type = ConType.NONE;
 			break;
 		case INT_3:
 			m_uCon.Type = ConType.NONE;
-			m_dCon.Type = ConType.IN_OUT;
-			m_lCon.Type = ConType.IN_OUT;
-			m_rCon.Type = ConType.IN_OUT;
+			m_dCon.Type = ConType.OUT;
+			m_lCon.Type = ConType.OUT;
+			m_rCon.Type = ConType.OUT;
 			break;
 		case INT_4:
-			m_uCon.Type = ConType.IN_OUT;
-			m_dCon.Type = ConType.IN_OUT;
-			m_lCon.Type = ConType.IN_OUT;
-			m_rCon.Type = ConType.IN_OUT;
+			m_uCon.Type = ConType.OUT;
+			m_dCon.Type = ConType.OUT;
+			m_lCon.Type = ConType.OUT;
+			m_rCon.Type = ConType.OUT;
 			break;
 		default:
 			break;
@@ -257,6 +257,9 @@ public class Road {
 	// Sets a sign to the road
 	public void SetSign(SignType sign)
 	{
+		if (m_sign == sign)
+			return;
+		
 		m_sign = sign;
 
 		if (sign != SignType.NONE)
@@ -303,59 +306,90 @@ public class Road {
 			break;
 		default:
 			m_currentSign = null;
+			// Reset connections for tile once we destroy a sign
+			PopulateConnections();
 			break;
 		}
 	}
 	
+	/**
+	 * Gets the road to be outputted deppending on connection type
+	 * @return
+	 */
 	private Road GetOutputRoad()
 	{
 		System.out.println("Getting output road for road " + m_tilePos.x + "," + m_tilePos.y);
 		
+		Road road = null;
+		
 		if (m_uCon.Type == ConType.OUT)
 		{
 			System.out.println("UP: OUT");
-			return m_manager.GetRoad(m_tilePos.x, m_tilePos.y -1);
+			road = m_manager.GetRoad(m_tilePos.x, m_tilePos.y -1);
+			road.m_dCon.Type = ConType.IN;
 		}
 		if (m_dCon.Type == ConType.OUT)
 		{
 			System.out.println("DOWN: OUT");
-			return m_manager.GetRoad(m_tilePos.x, m_tilePos.y +1);
+			road = m_manager.GetRoad(m_tilePos.x, m_tilePos.y +1);
+			road.m_uCon.Type = ConType.IN;
 		}
 		if (m_lCon.Type == ConType.OUT)
 		{
 			System.out.println("LEFT: OUT");
-			return m_manager.GetRoad(m_tilePos.x-1, m_tilePos.y);
+			road = m_manager.GetRoad(m_tilePos.x-1, m_tilePos.y);
+			road.m_rCon.Type = ConType.IN;
 		}
 		if (m_rCon.Type == ConType.OUT)
 		{
 			System.out.println("RIGHT: OUT");
-			return m_manager.GetRoad(m_tilePos.x+1, m_tilePos.y);
+			road = m_manager.GetRoad(m_tilePos.x+1, m_tilePos.y);
+			road.m_lCon.Type = ConType.IN;
 		}
 		
 		if (m_uCon.Type == ConType.IN_OUT)
 		{
 			System.out.println("UP: IN_OUT");
-			return m_manager.GetRoad(m_tilePos.x, m_tilePos.y -1);
+			road = m_manager.GetRoad(m_tilePos.x, m_tilePos.y -1);
+			road.m_dCon.Type = ConType.IN;
 		}
 		if (m_dCon.Type == ConType.IN_OUT)
 		{
 			System.out.println("DOWN: IN_OUT");
-			return m_manager.GetRoad(m_tilePos.x, m_tilePos.y +1);
+			road = m_manager.GetRoad(m_tilePos.x, m_tilePos.y +1);
+			road.m_uCon.Type = ConType.IN;
 		}
 		if (m_lCon.Type == ConType.IN_OUT)
 		{
 			System.out.println("LEFT: IN_OUT");
-			return m_manager.GetRoad(m_tilePos.x - 1, m_tilePos.y);
+			road = m_manager.GetRoad(m_tilePos.x-1, m_tilePos.y);
+			road.m_rCon.Type = ConType.IN;
 		}
 		if (m_rCon.Type == ConType.IN_OUT)
 		{
 			System.out.println("RIGHT: IN_OUT");
-			return m_manager.GetRoad(m_tilePos.x + 1, m_tilePos.y);
+			road = m_manager.GetRoad(m_tilePos.x+1, m_tilePos.y);
+			road.m_lCon.Type = ConType.IN;
 		}
 		
-		System.out.println("Didn't get any road!");
-		
-		return null;
+		return road;
+	}
+	
+	/**
+	 * Turn was processed by another tile, so delay this tile
+	 */
+	public void DelayTurn()
+	{
+		m_delay = true;
+	}
+	
+	/**
+	 * Returns the tile position
+	 * @return
+	 */
+	public Point GetTilePosition()
+	{
+		return m_tilePos;
 	}
 
 	/**
@@ -370,19 +404,25 @@ public class Road {
 		Road nextRoad = null;
 		
 		// Get the connecting road
+		// and set the connection where the car is going now as an IN
+		// so that the roads give a standard direction to those cars
 		switch(m_sign)
 		{
 		case UP:
 			nextRoad = m_manager.GetRoad(m_tilePos.x, m_tilePos.y - 1);
+			nextRoad.m_dCon.Type = ConType.IN;
 			break;
 		case DOWN:
 			nextRoad = m_manager.GetRoad(m_tilePos.x, m_tilePos.y + 1);
+			nextRoad.m_uCon.Type = ConType.IN;
 			break;
 		case LEFT:
 			nextRoad = m_manager.GetRoad(m_tilePos.x - 1, m_tilePos.y);
+			nextRoad.m_rCon.Type = ConType.IN;
 			break;
 		case RIGHT:
 			nextRoad = m_manager.GetRoad(m_tilePos.x + 1, m_tilePos.y);
+			nextRoad.m_lCon.Type = ConType.IN;
 		default:
 			nextRoad = GetOutputRoad();
 			if (nextRoad != null)
@@ -395,6 +435,18 @@ public class Road {
 		{
 			nextRoad.Occupied = true;
 			Occupied = false;
+			nextRoad.DelayTurn();
+		}
+		
+		if (nextRoad != null && nextRoad.m_tilePos == this.m_tilePos)
+		{
+			// End of map, let cars go
+			Occupied = false;
+		}
+		
+		if (m_tilePos.x == 3 && m_tilePos.y == 1)
+		{
+			DumpConnectionInfo();
 		}
 	}
 
@@ -465,6 +517,8 @@ public class Road {
 	 */
 	public void DumpConnectionInfo()
 	{
+		System.out.println("");
+		System.out.println("ConInfo Dump: Road: " + m_tilePos.x + ", " + m_tilePos.y);
 		System.out.println("Up Connection is: " + m_uCon.ToString());
 		System.out.println("Down Connection is: " + m_dCon.ToString());
 		System.out.println("Left Connection is: " + m_lCon.ToString());

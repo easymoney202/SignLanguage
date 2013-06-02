@@ -30,6 +30,7 @@ public class TrafficScene extends GameScene {
 	private Button m_owLeftBtn;
 	private Button m_owUpBtn;
 	private Button m_owDownBtn;
+	private Button m_nextBtn;
 	
 	private RoadManager m_roadMgr;
 	
@@ -53,12 +54,13 @@ public class TrafficScene extends GameScene {
 			System.out.println("Failed to load Traffic Scene images");
 		}
 		
-		m_stopBtn = new Button("Stop", "Images/stop_btn.png", new Point(610, 100));
-		m_stopAWBtn = new Button("Stop AW", "Images/stopaw_btn.png", new Point(710, 100));
-		m_owRightBtn = new Button("OW Right", "Images/ow_right_btn.png", new Point(610, 300));
-		m_owLeftBtn = new Button("OW Left", "Images/ow_left_btn.png", new Point(710, 300));
-		m_owUpBtn = new Button("OW Up", "Images/ow_up_btn.png", new Point(610, 400));
-		m_owDownBtn = new Button("OW Down", "Images/ow_down_btn.png", new Point(710, 400));
+		m_stopBtn = new Button("Stop", "Images/stop_btn.png", new Point(610, 30));
+		m_stopAWBtn = new Button("Stop AW", "Images/stopaw_btn.png", new Point(710, 30));
+		m_owRightBtn = new Button("OW Right", "Images/ow_right_btn.png", new Point(610, 200));
+		m_owLeftBtn = new Button("OW Left", "Images/ow_left_btn.png", new Point(710, 200));
+		m_owUpBtn = new Button("OW Up", "Images/ow_up_btn.png", new Point(610, 300));
+		m_owDownBtn = new Button("OW Down", "Images/ow_down_btn.png", new Point(710, 300));
+		m_nextBtn = new Button("Next Turn", "Images/next_btn.png", new Point(660, 450));
 	}
 
 	/**
@@ -75,6 +77,7 @@ public class TrafficScene extends GameScene {
 		m_owLeftBtn.paint(g);
 		m_owUpBtn.paint(g);
 		m_owDownBtn.paint(g);
+		m_nextBtn.paint(g);
 	}
 
 	/**
@@ -162,6 +165,11 @@ public class TrafficScene extends GameScene {
 			if (m_owRightBtn.IsClicked(e.getPoint()))
 			{
 				m_signSelected = SignType.RIGHT;
+			}
+			
+			if (m_nextBtn.IsClicked(e.getPoint()))
+			{
+				m_roadMgr.ProcessTurn();
 			}
 			
 			m_roadMgr.MouseClick(e, m_signSelected);
