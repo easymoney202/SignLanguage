@@ -120,7 +120,6 @@ public class RoadManager {
 	 */
 	public Road GetRoad(int x, int y)
 	{
-		System.out.println("Getting road: " + x + "," + y);
 		// Make sure we don't screw the array
 		if (x < 0)
 			x = 0;
@@ -131,7 +130,7 @@ public class RoadManager {
 		if (y >= 5)
 			y = 4;
 		
-		System.out.println("Returning road " + x +"," + y);
+		//System.out.println("Returning road " + x +"," + y);
 		
 		if (m_roads[y][x] == null)
 			System.out.println("Whoops! Null road!");

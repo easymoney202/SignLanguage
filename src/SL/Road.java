@@ -318,56 +318,56 @@ public class Road {
 	 */
 	private Road GetOutputRoad()
 	{
-		System.out.println("Getting output road for road " + m_tilePos.x + "," + m_tilePos.y);
+		//System.out.println("Getting output road for road " + m_tilePos.x + "," + m_tilePos.y);
 		
 		Road road = null;
 		
 		if (m_uCon.Type == ConType.OUT)
 		{
-			System.out.println("UP: OUT");
+			//System.out.println("UP: OUT");
 			road = m_manager.GetRoad(m_tilePos.x, m_tilePos.y -1);
 			road.m_dCon.Type = ConType.IN;
 		}
 		if (m_dCon.Type == ConType.OUT)
 		{
-			System.out.println("DOWN: OUT");
+			//System.out.println("DOWN: OUT");
 			road = m_manager.GetRoad(m_tilePos.x, m_tilePos.y +1);
 			road.m_uCon.Type = ConType.IN;
 		}
 		if (m_lCon.Type == ConType.OUT)
 		{
-			System.out.println("LEFT: OUT");
+			//System.out.println("LEFT: OUT");
 			road = m_manager.GetRoad(m_tilePos.x-1, m_tilePos.y);
 			road.m_rCon.Type = ConType.IN;
 		}
 		if (m_rCon.Type == ConType.OUT)
 		{
-			System.out.println("RIGHT: OUT");
+			//System.out.println("RIGHT: OUT");
 			road = m_manager.GetRoad(m_tilePos.x+1, m_tilePos.y);
 			road.m_lCon.Type = ConType.IN;
 		}
 		
 		if (m_uCon.Type == ConType.IN_OUT)
 		{
-			System.out.println("UP: IN_OUT");
+			//System.out.println("UP: IN_OUT");
 			road = m_manager.GetRoad(m_tilePos.x, m_tilePos.y -1);
 			road.m_dCon.Type = ConType.IN;
 		}
 		if (m_dCon.Type == ConType.IN_OUT)
 		{
-			System.out.println("DOWN: IN_OUT");
+			//System.out.println("DOWN: IN_OUT");
 			road = m_manager.GetRoad(m_tilePos.x, m_tilePos.y +1);
 			road.m_uCon.Type = ConType.IN;
 		}
 		if (m_lCon.Type == ConType.IN_OUT)
 		{
-			System.out.println("LEFT: IN_OUT");
+			//System.out.println("LEFT: IN_OUT");
 			road = m_manager.GetRoad(m_tilePos.x-1, m_tilePos.y);
 			road.m_rCon.Type = ConType.IN;
 		}
 		if (m_rCon.Type == ConType.IN_OUT)
 		{
-			System.out.println("RIGHT: IN_OUT");
+			//System.out.println("RIGHT: IN_OUT");
 			road = m_manager.GetRoad(m_tilePos.x+1, m_tilePos.y);
 			road.m_lCon.Type = ConType.IN;
 		}
@@ -425,8 +425,8 @@ public class Road {
 			nextRoad.m_lCon.Type = ConType.IN;
 		default:
 			nextRoad = GetOutputRoad();
-			if (nextRoad != null)
-				System.out.println("Got road: " + nextRoad.m_tilePos.x + "," + nextRoad.m_tilePos.y);
+			//if (nextRoad != null)
+				//System.out.println("Got road: " + nextRoad.m_tilePos.x + "," + nextRoad.m_tilePos.y);
 			break;
 		}
 
@@ -443,10 +443,31 @@ public class Road {
 			// End of map, let cars go
 			Occupied = false;
 		}
+	}
+	
+	/**
+	 * This checks that our road doesn't get stuck
+	 * by overriding all outlets to IN. This causes a bug
+	 * So check if all of them are IN and re-populate
+	 */
+	private void SanityCheck()
+	{
+		int count = 0;
 		
-		if (m_tilePos.x == 3 && m_tilePos.y == 1)
+		if (m_uCon.Type == ConType.IN || m_uCon.Type == ConType.NONE)
+			count++;
+		if (m_dCon.Type == ConType.IN || m_dCon.Type == ConType.NONE)
+			count++;
+		if (m_lCon.Type == ConType.IN || m_lCon.Type == ConType.NONE)
+			count++;
+		if (m_rCon.Type == ConType.IN || m_rCon.Type == ConType.NONE)
+			count++;
+		
+		// The road is messed. Re-populate connections to standard form
+		if (count == 4)
 		{
-			DumpConnectionInfo();
+			System.out.println("Repopulating road: " + m_tilePos.x + "," + m_tilePos.y);
+			PopulateConnections();
 		}
 	}
 
@@ -509,6 +530,8 @@ public class Road {
 				m_delay = true;
 			}
 		}
+		
+		SanityCheck();
 	}
 
 	/**
