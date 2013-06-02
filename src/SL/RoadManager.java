@@ -25,7 +25,7 @@ public class RoadManager {
 	private int level[][] = {
 			{1,9,5,2,0},
 			{0,2,2,2,0},
-			{0,2,7,13,1},
+			{0,2,7,10,1},
 			{0,2,0,2,0},
 			{0,2,0,2,0}};
 	
@@ -132,8 +132,10 @@ public class RoadManager {
 		
 		//System.out.println("Returning road " + x +"," + y);
 		
-		if (m_roads[y][x] == null)
-			System.out.println("Whoops! Null road!");
+		if (m_roads[y][x] == null) {
+			System.out.println("Whoops! Null road!  Hope he has good insurance!");
+			return null;
+		}
 		
 		return m_roads[y][x];
 	}
