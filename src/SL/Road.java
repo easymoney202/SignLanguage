@@ -420,8 +420,8 @@ public class Road {
 		
 		// Variable to obtain the connecting road
 		Road nextRoad = null;
-		Road leftRoad = null;
-		Road rightRoad = null;
+		Road leftRoad = null; //Look left
+		Road rightRoad = null; // Look right
 		
 		// Get the connecting road
 		// and set the connection where the car is going now as an IN
@@ -592,15 +592,16 @@ public class Road {
 					m_delay = false;
 					return;
 				}
-
+				if(at_sign_delay)
+					at_sign_delay = false;
+				else if (Occupied == true && m_sign == SignType.STOP && !m_delay)
+				{
+					//System.out.println("Found a stop sign at " + m_tilePos.x + " " + m_tilePos.y);
+					at_sign_delay = true;
+				}
+				
 				// Move car here
 				ProcessCarMovement();
-
-				// Delay every turn
-				if (m_sign == SignType.STOP && !m_delay)
-				{
-					m_delay = true;
-				}
 
 			}
 		}
