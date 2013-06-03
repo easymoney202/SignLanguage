@@ -49,7 +49,7 @@ public class Road {
 	
 	// IsSpawn and spawn frequency (Turn wise)
 	public boolean IsSpawn = false;
-	public int Frequency = 4;
+	public int Frequency = 5;
 
 	public boolean Occupied = false;
 	public boolean Explosion = false;
@@ -415,9 +415,12 @@ public class Road {
 	private void ProcessCarMovement()
 	{
 		Explosion = false;
-		if (!Occupied)
+		if (!Occupied) {
+			m_delay = false;
 			return;
+		}
 		
+		//System.out.println("Road Occupado");
 		// Variable to obtain the connecting road
 		Road nextRoad = null;
 		Road leftRoad = null; //Look left
@@ -481,7 +484,7 @@ public class Road {
 			
 			if(!LROccupied && !RROccupied && !NROccupied) {
 				stop_delay = false;
-				//System.out.println("The car at " + m_tilePos.x + " " + m_tilePos.y + "is free to go");
+				System.out.println("The car at " + m_tilePos.x + " " + m_tilePos.y + "is free to go");
 			}
 			//else
 				//System.out.println("The car at " + m_tilePos.x + " " + m_tilePos.y + "is blocked");
@@ -497,14 +500,17 @@ public class Road {
 		// for great justice
 		if(nextRoad == null) {
 			Occupied = false;
+			//System.out.println("nextRoad is null");
 			//TODO: Car blows up offscreen
 		}
 		//If we're at a stop sign, need to look to the left and right of next road for occupation
 		else if(!stop_delay){
 			
 			//If driving into a pileup, become one with the pileup.
-			if(Occupied == true && nextRoad.Explosion == true)
+			if(Occupied == true && nextRoad.Explosion == true) {
 				Occupied = false;
+				//System.out.println("Diving into the fray");
+			}
 			
 			else if (nextRoad != null && nextRoad.m_tilePos == this.m_tilePos)
 			{
@@ -529,11 +535,15 @@ public class Road {
 				//System.out.println("Waiting for a guy waiting for a guy at " + m_tilePos.x + " " + m_tilePos.y);
 				stop_delay = true;
 			}
-			else if (Explosion == false && nextRoad != null && nextRoad.Occupied == false)
+			else //if (Explosion == false && nextRoad != null && nextRoad.Occupied == false)
 			{
 				nextRoad.Occupied = true;
 				Occupied = false;
-				nextRoad.DelayTurn();
+				//System.out.println("Delaying " + nextRoad.m_tilePos.x + " " + nextRoad.m_tilePos.y);
+				if(nextRoad.m_tilePos.y > m_tilePos.y)
+					nextRoad.DelayTurn();
+				else if(nextRoad.m_tilePos.y == m_tilePos.y && nextRoad.m_tilePos.x > m_tilePos.x)
+					nextRoad.DelayTurn();
 			}
 		
 		}
@@ -589,11 +599,14 @@ public class Road {
 				// then return this turn
 				if (m_delay)
 				{
+					//System.out.println("m_delay break");
 					m_delay = false;
 					return;
 				}
-				if(at_sign_delay)
+				if(at_sign_delay) {
 					at_sign_delay = false;
+					System.out.println("Resetting ASD");
+				}
 				else if (Occupied == true && m_sign == SignType.STOP && !m_delay)
 				{
 					//System.out.println("Found a stop sign at " + m_tilePos.x + " " + m_tilePos.y);
@@ -612,6 +625,7 @@ public class Road {
 			// then return this turn
 			if (m_delay)
 			{
+				//System.out.println("m_delay break");
 				m_delay = false;
 				return;
 			}
@@ -619,7 +633,7 @@ public class Road {
 				at_sign_delay = false;
 			else if (Occupied == true && m_sign == SignType.STOP && !m_delay)
 			{
-				//System.out.println("Found a stop sign at " + m_tilePos.x + " " + m_tilePos.y);
+				System.out.println("Found a stop sign at " + m_tilePos.x + " " + m_tilePos.y);
 				at_sign_delay = true;
 			}
 			

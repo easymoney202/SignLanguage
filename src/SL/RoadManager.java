@@ -78,7 +78,7 @@ public class RoadManager {
 		
 		// Set the top tile as spawn point to test
 		m_roads[0][0].SetSpawnPoint(true);
-		m_roads[0][0].Frequency = 2;
+		m_roads[0][0].Frequency = 3;
 		m_roads[0][0].SetSign(SignType.RIGHT);
 		m_roads[0][0].SignVisible = false;
 	}
@@ -134,7 +134,7 @@ public class RoadManager {
 		//System.out.println("Returning road " + x +"," + y);
 		
 		if (m_roads[y][x] == null) {
-			System.out.println("Whoops! Null road!  Hope he has good insurance!");
+			//System.out.println("Whoops! Null road!  Hope he has good insurance!");
 			return null;
 		}
 		
