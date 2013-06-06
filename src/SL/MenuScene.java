@@ -29,7 +29,7 @@ public class MenuScene extends GameScene {
 		m_selection = 0;
 		m_numberselections = 3;
 		try {
-			File imageFile = new File("Images/Title.png");
+			File imageFile = new File("Images/title.png");
 			m_background = ImageIO.read(imageFile);
 		} catch (Exception ex) {
 			System.out.println("Failed to load Title screen image");

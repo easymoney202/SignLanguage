@@ -524,8 +524,6 @@ public class Road {
 			stop_delay = true;
 		}
 		
-
-		
 		if(stop_delay) {	
 			if(!LROccupied && !RROccupied && !NROccupied) {
 				stop_delay = false;
@@ -751,12 +749,6 @@ public class Road {
 			// Move car here
 			ProcessCarMovement();
 			
-			// Delay every turn
-			/*if (Occupied == true && m_sign == SignType.STOP && !m_delay)
-			{
-				System.out.println("Found a stop sign at " + m_tilePos.x + " " + m_tilePos.y);
-				m_delay = true;
-			} */
 		}
 
 		SanityCheck();
