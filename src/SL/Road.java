@@ -11,31 +11,20 @@ import SL.Connection.ConDir;
 import SL.Connection.ConType;
 
 /**
- * Defines a road object, this will also handle painting it
- * Roads will be defined with formulas for painting it
+ * Defines a road object, this will also handle painting it Roads will be
+ * defined with formulas for painting it
  * 
  * @author Diego, Matt & Zac
  */
 public class Road {
 	// Type of road
-	enum RoadType
-	{
-		STRAIGHT,
-		CURVE,
-		INT_3,
-		INT_4
+	enum RoadType {
+		STRAIGHT, CURVE, INT_3, INT_4
 	}
 
 	// Types of signs that can be on the road
-	enum SignType
-	{
-		NONE,
-		STOP,
-		STOP_AW,
-		UP,
-		DOWN,
-		LEFT,
-		RIGHT,
+	enum SignType {
+		NONE, STOP, STOP_AW, UP, DOWN, LEFT, RIGHT,
 	}
 
 	private static Image m_img = null;
@@ -46,7 +35,7 @@ public class Road {
 	public boolean m_delay = false;
 	public boolean stop_delay = false;
 	public boolean at_sign_delay = false;
-	
+
 	// IsSpawn and spawn frequency (Turn wise)
 	public boolean IsSpawn = false;
 	public int Frequency = 5;
@@ -57,6 +46,7 @@ public class Road {
 	// This is used for when we want spawn points to be "OneWay" but no sign is
 	// drawn to the screen
 	public boolean SignVisible = true;
+	public boolean SignRemoveable = true;
 
 	private SignType m_sign;
 	private static Image m_stop = null;
@@ -75,10 +65,10 @@ public class Road {
 
 	/**
 	 * Constructor
+	 * 
 	 * @param type
 	 */
-	public Road(RoadType type, int rot, Point pos, RoadManager manager)
-	{
+	public Road(RoadType type, int rot, Point pos, RoadManager manager) {
 		if (m_img == null)
 			m_img = LoadImage("Images/120x120_slim_tiles.png");
 
@@ -96,7 +86,7 @@ public class Road {
 			m_owRight = LoadImage("Images/oneway_right.png");
 
 		if (m_carImg == null)
-			m_carImg = LoadImage("Images/Car120.png");
+			m_carImg = LoadImage("Images/Car120_strip.png");
 
 		m_rotation = rot;
 		m_position = new Point();
@@ -119,11 +109,9 @@ public class Road {
 	/**
 	 * Populate the connection objects
 	 */
-	private void PopulateConnections()
-	{
+	private void PopulateConnections() {
 		// Create standard behavior for unrotated tiles
-		switch (m_type)
-		{
+		switch (m_type) {
 		case STRAIGHT:
 			m_uCon.Type = ConType.NONE;
 			m_dCon.Type = ConType.NONE;
@@ -158,8 +146,7 @@ public class Road {
 		Connection t_rC = m_rCon;
 
 		// Switch rotations accordingly
-		switch (m_rotation)
-		{
+		switch (m_rotation) {
 		case 1:
 			m_uCon = t_lC;
 			m_lCon = t_dC;
@@ -185,10 +172,10 @@ public class Road {
 
 	/**
 	 * Sets this road as a spawn point for cars
+	 * 
 	 * @param flag
 	 */
-	void SetSpawnPoint(boolean flag)
-	{
+	void SetSpawnPoint(boolean flag) {
 		IsSpawn = flag;
 
 		// Initialize data here
@@ -196,13 +183,12 @@ public class Road {
 
 	/**
 	 * Paints the road
+	 * 
 	 * @param g
 	 */
-	public void paint (Graphics g)
-	{
+	public void paint(Graphics g) {
 		int x_offset = 0;
-		switch (m_type)
-		{
+		switch (m_type) {
 		case STRAIGHT:
 			x_offset = 0;
 			break;
@@ -225,38 +211,49 @@ public class Road {
 		int x_epos = x_pos + RoadManager.TILE_SIZE;
 		int y_epos = y_pos + RoadManager.TILE_SIZE;
 
+		int m_rotation2 = 0;
+		if (m_rotation == 0) { 
+			m_rotation2 = 0;
+		} else if (m_rotation == 1) {
+			m_rotation2 = 1;
+		} else if (m_rotation == 2) {
+			m_rotation2 = 0;
+		} else if (m_rotation == 3) {
+			m_rotation2 = 1;
+		}
+
+		// Source cut 2
+		int x_pos2 = m_rotation2 * RoadManager.TILE_SIZE;
+		int x_epos2 = x_pos2 + RoadManager.TILE_SIZE;
+
 		// Draws the road
-		g.drawImage(m_img, m_position.x, m_position.y, m_position.x + RoadManager.TILE_SIZE,
-				m_position.y + RoadManager.TILE_SIZE, x_pos, y_pos, x_epos, y_epos, null);
+		g.drawImage(m_img, m_position.x, m_position.y, m_position.x + RoadManager.TILE_SIZE, m_position.y
+				+ RoadManager.TILE_SIZE, x_pos, y_pos, x_epos, y_epos, null);
 
 		// Draw the sign
-		if (m_currentSign != null)
-		{
+		if (m_currentSign != null) {
 			if (SignVisible)
 				g.drawImage(m_currentSign, m_position.x, m_position.y, null);
 		}
 
 		if (Occupied)
-			g.drawImage(m_carImg, m_position.x, m_position.y, null);
-		
+			g.drawImage(m_carImg, m_position.x, m_position.y, m_position.x + RoadManager.TILE_SIZE, m_position.y
+					+ RoadManager.TILE_SIZE, x_pos2, 0, x_epos2, RoadManager.TILE_SIZE, null);
+
 		if (Explosion) {
 			System.out.println("Cars go Boom!");
 			Explosion = false;
 		}
-			
+
 	}
 
 	// Loads a image for a sign
-	private Image LoadImage(String filename)
-	{
+	private Image LoadImage(String filename) {
 		Image img = null;
-		try
-		{
+		try {
 			File imgFile = new File(filename);
 			img = ImageIO.read(imgFile);
-		}
-		catch (Exception e)
-		{
+		} catch (Exception e) {
 			System.out.println("Problem loading: " + filename);
 		}
 
@@ -264,21 +261,19 @@ public class Road {
 	}
 
 	// Sets a sign to the road
-	public void SetSign(SignType sign)
-	{
+	public void SetSign(SignType sign) {
 		if (m_sign == sign)
 			return;
-		
+
 		m_sign = sign;
 
 		if (sign != SignType.NONE)
 			HasSign = true;
 
-		switch (sign)
-		{
+		switch (sign) {
 		case STOP:
 			m_currentSign = m_stop;
-			//m_delay = true;
+			// m_delay = true;
 			break;
 		case STOP_AW:
 			m_currentSign = m_stopAW;
@@ -320,244 +315,238 @@ public class Road {
 			break;
 		}
 	}
-	
+
 	/**
 	 * Gets the road to be outputted deppending on connection type
+	 * 
 	 * @return
 	 */
-	private Road GetOutputRoad()
-	{
-		//System.out.println("Getting output road for road " + m_tilePos.x + "," + m_tilePos.y);
-		
+	private Road GetOutputRoad() {
+		// System.out.println("Getting output road for road " + m_tilePos.x +
+		// "," + m_tilePos.y);
+
 		Road road = null;
-		
-		if (m_uCon.Type == ConType.OUT)
-		{
-			//System.out.println("UP: OUT");
-			road = m_manager.GetRoad(m_tilePos.x, m_tilePos.y -1);
-			if(road != null)
+
+		if (m_uCon.Type == ConType.OUT) {
+			// System.out.println("UP: OUT");
+			road = m_manager.GetRoad(m_tilePos.x, m_tilePos.y - 1);
+			if (road != null)
 				road.m_dCon.Type = ConType.IN;
 		}
-		if (m_dCon.Type == ConType.OUT)
-		{
-			//System.out.println("DOWN: OUT");
-			road = m_manager.GetRoad(m_tilePos.x, m_tilePos.y +1);
-			if(road != null)
+		if (m_dCon.Type == ConType.OUT) {
+			// System.out.println("DOWN: OUT");
+			road = m_manager.GetRoad(m_tilePos.x, m_tilePos.y + 1);
+			if (road != null)
 				road.m_uCon.Type = ConType.IN;
 		}
-		if (m_lCon.Type == ConType.OUT)
-		{
-			//System.out.println("LEFT: OUT");
-			road = m_manager.GetRoad(m_tilePos.x-1, m_tilePos.y);
-			if(road != null)
+		if (m_lCon.Type == ConType.OUT) {
+			// System.out.println("LEFT: OUT");
+			road = m_manager.GetRoad(m_tilePos.x - 1, m_tilePos.y);
+			if (road != null)
 				road.m_rCon.Type = ConType.IN;
 		}
-		if (m_rCon.Type == ConType.OUT)
-		{
-			//System.out.println("RIGHT: OUT");
-			road = m_manager.GetRoad(m_tilePos.x+1, m_tilePos.y);
-			if(road != null)
+		if (m_rCon.Type == ConType.OUT) {
+			// System.out.println("RIGHT: OUT");
+			road = m_manager.GetRoad(m_tilePos.x + 1, m_tilePos.y);
+			if (road != null)
 				road.m_lCon.Type = ConType.IN;
 		}
-		
-		if (m_uCon.Type == ConType.IN_OUT)
-		{
-			//System.out.println("UP: IN_OUT");
-			road = m_manager.GetRoad(m_tilePos.x, m_tilePos.y -1);
-			if(road != null)
+
+		if (m_uCon.Type == ConType.IN_OUT) {
+			// System.out.println("UP: IN_OUT");
+			road = m_manager.GetRoad(m_tilePos.x, m_tilePos.y - 1);
+			if (road != null)
 				road.m_dCon.Type = ConType.IN;
 		}
-		if (m_dCon.Type == ConType.IN_OUT)
-		{
-			//System.out.println("DOWN: IN_OUT");
-			road = m_manager.GetRoad(m_tilePos.x, m_tilePos.y +1);
-			if(road != null)
+		if (m_dCon.Type == ConType.IN_OUT) {
+			// System.out.println("DOWN: IN_OUT");
+			road = m_manager.GetRoad(m_tilePos.x, m_tilePos.y + 1);
+			if (road != null)
 				road.m_uCon.Type = ConType.IN;
 		}
-		if (m_lCon.Type == ConType.IN_OUT)
-		{
-			//System.out.println("LEFT: IN_OUT");
-			road = m_manager.GetRoad(m_tilePos.x-1, m_tilePos.y);
-			if(road != null)
+		if (m_lCon.Type == ConType.IN_OUT) {
+			// System.out.println("LEFT: IN_OUT");
+			road = m_manager.GetRoad(m_tilePos.x - 1, m_tilePos.y);
+			if (road != null)
 				road.m_rCon.Type = ConType.IN;
 		}
-		if (m_rCon.Type == ConType.IN_OUT)
-		{
-			//System.out.println("RIGHT: IN_OUT");
-			road = m_manager.GetRoad(m_tilePos.x+1, m_tilePos.y);
-			if(road != null)
+		if (m_rCon.Type == ConType.IN_OUT) {
+			// System.out.println("RIGHT: IN_OUT");
+			road = m_manager.GetRoad(m_tilePos.x + 1, m_tilePos.y);
+			if (road != null)
 				road.m_lCon.Type = ConType.IN;
 		}
-		
+
 		return road;
 	}
-	
+
 	/**
 	 * Turn was processed by another tile, so delay this tile
 	 */
-	public void DelayTurn()
-	{
+	public void DelayTurn() {
 		m_delay = true;
 	}
-	
+
 	/**
 	 * Returns the tile position
+	 * 
 	 * @return
 	 */
-	public Point GetTilePosition()
-	{
+	public Point GetTilePosition() {
 		return m_tilePos;
 	}
 
 	/**
 	 * Processes where the car needs to go
 	 */
-	private void ProcessCarMovement()
-	{
+	private void ProcessCarMovement() {
 		Explosion = false;
 		if (!Occupied) {
 			m_delay = false;
 			return;
 		}
-		
-		//System.out.println("Road Occupado");
+
+		// System.out.println("Road Occupado");
 		// Variable to obtain the connecting road
 		Road nextRoad = null;
-		Road leftRoad = null; //Look left
+		Road leftRoad = null; // Look left
 		Road rightRoad = null; // Look right
-		
+
 		// Get the connecting road
 		// and set the connection where the car is going now as an IN
 		// so that the roads give a standard direction to those cars
-		switch(m_sign)
-		{
+		switch (m_sign) {
 		case UP:
 			nextRoad = m_manager.GetRoad(m_tilePos.x, m_tilePos.y - 1);
 			leftRoad = m_manager.GetRoad(m_tilePos.x - 1, m_tilePos.y - 1);
 			rightRoad = m_manager.GetRoad(m_tilePos.x + 1, m_tilePos.y - 1);
-			if(nextRoad != null)
+			if (nextRoad != null)
 				nextRoad.m_dCon.Type = ConType.IN;
 			break;
 		case DOWN:
 			nextRoad = m_manager.GetRoad(m_tilePos.x, m_tilePos.y + 1);
 			leftRoad = m_manager.GetRoad(m_tilePos.x - 1, m_tilePos.y + 1);
 			rightRoad = m_manager.GetRoad(m_tilePos.x + 1, m_tilePos.y + 1);
-			if(nextRoad != null)
+			if (nextRoad != null)
 				nextRoad.m_uCon.Type = ConType.IN;
 			break;
 		case LEFT:
 			nextRoad = m_manager.GetRoad(m_tilePos.x - 1, m_tilePos.y);
 			leftRoad = m_manager.GetRoad(m_tilePos.x - 1, m_tilePos.y + 1);
 			rightRoad = m_manager.GetRoad(m_tilePos.x - 1, m_tilePos.y - 1);
-			if(nextRoad != null)
+			if (nextRoad != null)
 				nextRoad.m_rCon.Type = ConType.IN;
 			break;
 		case RIGHT:
 			nextRoad = m_manager.GetRoad(m_tilePos.x + 1, m_tilePos.y);
 			leftRoad = m_manager.GetRoad(m_tilePos.x + 1, m_tilePos.y - 1);
 			rightRoad = m_manager.GetRoad(m_tilePos.x + 1, m_tilePos.y + 1);
-			if(nextRoad != null)
+			if (nextRoad != null)
 				nextRoad.m_lCon.Type = ConType.IN;
 		default:
 			nextRoad = GetOutputRoad();
-			//if (nextRoad != null)
-				//System.out.println("Got road: " + nextRoad.m_tilePos.x + "," + nextRoad.m_tilePos.y);
+			// if (nextRoad != null)
+			// System.out.println("Got road: " + nextRoad.m_tilePos.x + "," +
+			// nextRoad.m_tilePos.y);
 			break;
 		}
-		
-		if(stop_delay) {
+
+		if (stop_delay) {
 			boolean LROccupied = true;
 			boolean RROccupied = true;
 			boolean NROccupied = true;
-			if(leftRoad != null)
+			if (leftRoad != null)
 				LROccupied = leftRoad.Occupied;
 			else
 				LROccupied = false;
-			if(rightRoad != null)
+			if (rightRoad != null)
 				RROccupied = rightRoad.Occupied;
 			else
 				RROccupied = false;
-			if(nextRoad != null)
+			if (nextRoad != null)
 				NROccupied = nextRoad.Occupied;
 			else
 				NROccupied = false;
-			
-			if(!LROccupied && !RROccupied && !NROccupied) {
+
+			if (!LROccupied && !RROccupied && !NROccupied) {
 				stop_delay = false;
 				System.out.println("The car at " + m_tilePos.x + " " + m_tilePos.y + "is free to go");
 			}
-			//else
-				//System.out.println("The car at " + m_tilePos.x + " " + m_tilePos.y + "is blocked");
-			
-		}
-		else if(at_sign_delay) {
-			//at_sign_delay = false;
+			// else
+			// System.out.println("The car at " + m_tilePos.x + " " +
+			// m_tilePos.y + "is blocked");
+
+		} else if (at_sign_delay) {
+			// at_sign_delay = false;
 			stop_delay = true;
-			//System.out.println("The car at " + m_tilePos.x + " " + m_tilePos.y + "is stopping");
+			// System.out.println("The car at " + m_tilePos.x + " " +
+			// m_tilePos.y + "is stopping");
 		}
 
 		// Move "car"
 		// for great justice
-		if(nextRoad == null) {
+		if (nextRoad == null) {
 			Occupied = false;
-			//System.out.println("nextRoad is null");
-			//TODO: Car blows up offscreen
+			// System.out.println("nextRoad is null");
+			// TODO: Car blows up offscreen
 		}
-		//If we're at a stop sign, need to look to the left and right of next road for occupation
-		else if(!stop_delay){
-			
-			//If driving into a pileup, become one with the pileup.
-			if(Occupied == true && nextRoad.Explosion == true) {
+		// If we're at a stop sign, need to look to the left and right of next
+		// road for occupation
+		else if (!stop_delay) {
+
+			// If driving into a pileup, become one with the pileup.
+			if (Occupied == true && nextRoad.Explosion == true) {
 				Occupied = false;
-				//System.out.println("Diving into the fray");
+				// System.out.println("Diving into the fray");
 			}
-			
-			else if (nextRoad != null && nextRoad.m_tilePos == this.m_tilePos)
-			{
+
+			else if (nextRoad != null && nextRoad.m_tilePos == this.m_tilePos) {
 				// End of map, let cars go
-				//System.out.println("Car leaving the map");
+				// System.out.println("Car leaving the map");
 				Occupied = false;
 			}
-			//You don't hit a guy waiting at a stop sign
-			else if(Occupied == true && nextRoad.Occupied == true && nextRoad.m_sign == SignType.STOP) {
+			// You don't hit a guy waiting at a stop sign
+			else if (Occupied == true && nextRoad.Occupied == true && nextRoad.m_sign == SignType.STOP) {
 				stop_delay = true;
-				//System.out.println("Waiting for a guy at " + m_tilePos.x + " " + m_tilePos.y);
+				// System.out.println("Waiting for a guy at " + m_tilePos.x +
+				// " " + m_tilePos.y);
 			}
-			//If he end waiting for someone, he's fair game
-			else if(Occupied == true && nextRoad.Occupied == true && nextRoad.stop_delay == false) {
-				//System.out.println("Found a collision at " + m_tilePos.x + " " + m_tilePos.y);
+			// If he end waiting for someone, he's fair game
+			else if (Occupied == true && nextRoad.Occupied == true && nextRoad.stop_delay == false) {
+				// System.out.println("Found a collision at " + m_tilePos.x +
+				// " " + m_tilePos.y);
 				Explosion = true;
 				Occupied = false;
 				nextRoad.Occupied = false;
 			}
-			//If the guy in front of you is waiting on someone, wait on him
-			else if(Occupied == true && nextRoad.Occupied == true && nextRoad.stop_delay == true) {
-				//System.out.println("Waiting for a guy waiting for a guy at " + m_tilePos.x + " " + m_tilePos.y);
+			// If the guy in front of you is waiting on someone, wait on him
+			else if (Occupied == true && nextRoad.Occupied == true && nextRoad.stop_delay == true) {
+				// System.out.println("Waiting for a guy waiting for a guy at "
+				// + m_tilePos.x + " " + m_tilePos.y);
 				stop_delay = true;
-			}
-			else //if (Explosion == false && nextRoad != null && nextRoad.Occupied == false)
+			} else // if (Explosion == false && nextRoad != null &&
+					// nextRoad.Occupied == false)
 			{
 				nextRoad.Occupied = true;
 				Occupied = false;
-				//System.out.println("Delaying " + nextRoad.m_tilePos.x + " " + nextRoad.m_tilePos.y);
-				if(nextRoad.m_tilePos.y > m_tilePos.y)
+				// System.out.println("Delaying " + nextRoad.m_tilePos.x + " " +
+				// nextRoad.m_tilePos.y);
+				if (nextRoad.m_tilePos.y > m_tilePos.y)
 					nextRoad.DelayTurn();
-				else if(nextRoad.m_tilePos.y == m_tilePos.y && nextRoad.m_tilePos.x > m_tilePos.x)
+				else if (nextRoad.m_tilePos.y == m_tilePos.y && nextRoad.m_tilePos.x > m_tilePos.x)
 					nextRoad.DelayTurn();
 			}
-		
+
 		}
 	}
-	
+
 	/**
-	 * This checks that our road doesn't get stuck
-	 * by overriding all outlets to IN. This causes a bug
-	 * So check if all of them are IN and re-populate
+	 * This checks that our road doesn't get stuck by overriding all outlets to
+	 * IN. This causes a bug So check if all of them are IN and re-populate
 	 */
-	private void SanityCheck()
-	{
+	private void SanityCheck() {
 		int count = 0;
-		
+
 		if (m_uCon.Type == ConType.IN || m_uCon.Type == ConType.NONE)
 			count++;
 		if (m_dCon.Type == ConType.IN || m_dCon.Type == ConType.NONE)
@@ -566,77 +555,65 @@ public class Road {
 			count++;
 		if (m_rCon.Type == ConType.IN || m_rCon.Type == ConType.NONE)
 			count++;
-		
+
 		// The road is messed. Re-populate connections to standard form
-		if (count == 4)
-		{
-			System.out.println("Repopulating road: " + m_tilePos.x + "," + m_tilePos.y);
-			PopulateConnections();
+		if (count == 4) {
+			// System.out.println("Repopulating road: " + m_tilePos.x + "," +
+			// m_tilePos.y);
+			// PopulateConnections();
 		}
 	}
 
 	/**
 	 * Processes a turn for the cars movement and sign control
 	 */
-	public void ProcessTurn()
-	{
-		if (IsSpawn)
-		{
-			if (m_manager.CurrentTurn % Frequency == 0)
-			{
-				if (!Occupied)
-				{
+	public void ProcessTurn() {
+		if (IsSpawn) {
+			if (m_manager.CurrentTurn % Frequency == 0) {
+				if (!Occupied) {
 					// This turn we should spawn a car
 					Occupied = true;
 
 					System.out.println("Car has spawned!");
 				}
 				// TO-DO: Add car creation
-			}
-			else
-			{
+			} else {
 				// If we are delaying for STOP sign
 				// then return this turn
-				if (m_delay)
-				{
-					//System.out.println("m_delay break");
+				if (m_delay) {
+					// System.out.println("m_delay break");
 					m_delay = false;
 					return;
 				}
-				if(at_sign_delay) {
+				if (at_sign_delay) {
 					at_sign_delay = false;
 					System.out.println("Resetting ASD");
-				}
-				else if (Occupied == true && m_sign == SignType.STOP && !m_delay)
-				{
-					//System.out.println("Found a stop sign at " + m_tilePos.x + " " + m_tilePos.y);
+				} else if (Occupied == true && m_sign == SignType.STOP && !m_delay) {
+					// System.out.println("Found a stop sign at " + m_tilePos.x
+					// + " " + m_tilePos.y);
 					at_sign_delay = true;
 				}
-				
+
 				// Move car here
 				ProcessCarMovement();
 
 			}
-		}
-		else
-		{
+		} else {
 
 			// If we are delaying for STOP sign
 			// then return this turn
-			if (m_delay)
-			{
-				//System.out.println("m_delay break");
+			if (m_delay) {
+				// System.out.println("m_delay break");
 				m_delay = false;
 				return;
 			}
-			if(at_sign_delay)
+			if (at_sign_delay)
 				at_sign_delay = false;
-			else if (Occupied == true && m_sign == SignType.STOP && !m_delay)
-			{
+			else if (Occupied == true && m_sign == SignType.STOP && !m_delay) {
 				System.out.println("Found a stop sign at " + m_tilePos.x + " " + m_tilePos.y);
 				at_sign_delay = true;
 			}
-			
+
 			// Move car here
 			ProcessCarMovement();
 
@@ -647,16 +624,14 @@ public class Road {
 				m_delay = true;
 			} */
 		}
-		
+
 		SanityCheck();
 	}
 
 	/**
-	 * Dumps the way connections are established.
-	 * This is for debugging
+	 * Dumps the way connections are established. This is for debugging
 	 */
-	public void DumpConnectionInfo()
-	{
+	public void DumpConnectionInfo() {
 		System.out.println("");
 		System.out.println("ConInfo Dump: Road: " + m_tilePos.x + ", " + m_tilePos.y);
 		System.out.println("Up Connection is: " + m_uCon.ToString());
@@ -666,17 +641,16 @@ public class Road {
 	}
 
 	/**
-	 * Checks if the mouse is over the object when clicked
-	 * So that we can affect the road somehow
-	 * @param mousePos Point object for the mouse position
+	 * Checks if the mouse is over the object when clicked So that we can affect
+	 * the road somehow
+	 * 
+	 * @param mousePos
+	 *            Point object for the mouse position
 	 * @return TRUE if the road was clicked
 	 */
-	public boolean IsClicked(Point mousePos)
-	{
-		if (mousePos.x >= m_position.x && mousePos.x <= m_position.x + RoadManager.TILE_SIZE)
-		{
-			if (mousePos.y >= m_position.y && mousePos.y <= m_position.y + RoadManager.TILE_SIZE)
-			{
+	public boolean IsClicked(Point mousePos) {
+		if (mousePos.x >= m_position.x && mousePos.x <= m_position.x + RoadManager.TILE_SIZE) {
+			if (mousePos.y >= m_position.y && mousePos.y <= m_position.y + RoadManager.TILE_SIZE) {
 				DumpConnectionInfo();
 				return true;
 			}

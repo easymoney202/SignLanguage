@@ -12,22 +12,24 @@ import SL.Road.SignType;
 
 /**
  * This class manages roads and road creation/editing
- * @author Diego, Zac
+ * @author Diego, Zac, Matt
  */
 public class RoadManager {
 
 	public static int TILE_SIZE = 120;
+	public static int TILE_W = 5;
+	public static int TILE_H = 5;
 
 	// 0 - Nothing
 	// 1-2 - Straight
 	// 5-8 - Curve
-	// 9-13 - Intersection 3
-	// 11 - Intersection 4
+	// 9-12 - Intersection 3
+	// 13 - Intersection 4
 	private int level[][] = {
 			{1,9,5,2,0},
 			{0,2,2,2,0},
-			{0,2,7,10,1},
-			{0,2,0,2,0},
+			{1,10,7,13,1},
+			{0,12,1,10,0},
 			{0,2,0,2,0}};
 	
 	private Road m_roads[][];
@@ -39,9 +41,9 @@ public class RoadManager {
 	 */
 	public void GenerateLevel()
 	{
-		for (int y = 0; y < 5; y++)
+		for (int y = 0; y < TILE_H; y++)
 		{
-			for (int x = 0; x < 5; x++)
+			for (int x = 0; x < TILE_W; x++)
 			{
 				if (level[y][x] != 0)
 				{
@@ -50,7 +52,6 @@ public class RoadManager {
 					int type = (level[y][x]-1)/4;
 					int rot = (level[y][x]-1)%4;
 					RoadType r_type = null;
-					
 					switch (type)
 					{
 					case 0:
@@ -80,12 +81,19 @@ public class RoadManager {
 		m_roads[0][0].SetSpawnPoint(true);
 		m_roads[0][0].Frequency = 3;
 		m_roads[0][0].SetSign(SignType.RIGHT);
-		m_roads[0][0].SignVisible = false;
+		//m_roads[0][0].SignVisible = false;
+		m_roads[0][0].SignRemoveable = false;
+		
+		m_roads[2][0].SetSpawnPoint(true);
+		m_roads[2][0].Frequency = 5;
+		m_roads[2][0].SetSign(SignType.RIGHT);
+		//m_roads[2][0].SignVisible = false;
+		m_roads[2][0].SignRemoveable = false;
 	}
 
 	public RoadManager()
 	{
-		m_roads = new Road[5][5];
+		m_roads = new Road[TILE_W][TILE_H];
 		GenerateLevel();
 	}
 
@@ -103,9 +111,9 @@ public class RoadManager {
 	// Paints the roads
 	public void paint(Graphics g)
 	{
-		for (int i = 0; i < 5; i++)
+		for (int i = 0; i < TILE_H; i++)
 		{
-			for (int j = 0; j < 5; j++)
+			for (int j = 0; j < TILE_W; j++)
 			{
 				if (m_roads[i][j] != null)
 					m_roads[i][j].paint(g);
@@ -126,10 +134,10 @@ public class RoadManager {
 			x = 0;
 		if (y < 0)
 			y = 0;
-		if (x >= 5)
-			x = 4;
-		if (y >= 5)
-			y = 4;
+		if (x >= TILE_W)
+			x = TILE_W - 1;
+		if (y >= TILE_H)
+			y = TILE_H - 1;
 		
 		//System.out.println("Returning road " + x +"," + y);
 		
@@ -146,9 +154,9 @@ public class RoadManager {
 	 */
 	public void ProcessTurn()
 	{
-		for (int i = 0; i < 5; i++)
+		for (int i = 0; i < TILE_H; i++)
 		{
-			for (int j = 0; j < 5; j++)
+			for (int j = 0; j < TILE_W; j++)
 			{
 				if (m_roads[i][j] != null)
 				{
@@ -168,23 +176,23 @@ public class RoadManager {
 	 */
 	public void KeyPressed(KeyEvent e)
 	{
-		//if (e.getKeyCode() == KeyEvent.VK_ENTER)
-		//{
+		if (e.getKeyCode() == KeyEvent.VK_SPACE)
+		{
 			// Process a turn (TEST FOR NOW)
-		//	ProcessTurn();
-		//}
+			ProcessTurn();
+		}
 	}
 
 	// Sets signs on the road
 	public void MouseClick(MouseEvent e, SignType sign)
 	{
-		for (int i = 0; i < 5; i++)
+		for (int i = 0; i < TILE_H; i++)
 		{
-			for (int j = 0; j < 5; j++)
+			for (int j = 0; j < TILE_W; j++)
 			{
 				if (m_roads[i][j] != null)
 				{
-					if (m_roads[i][j].IsClicked(e.getPoint()))
+					if (m_roads[i][j].IsClicked(e.getPoint()) && m_roads[i][j].SignRemoveable)
 						m_roads[i][j].SetSign(sign);
 					if (e.getButton() == MouseEvent.BUTTON2)
 						m_roads[i][j].DumpConnectionInfo();
