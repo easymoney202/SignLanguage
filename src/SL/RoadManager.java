@@ -87,8 +87,10 @@ public class RoadManager {
 		m_roads[2][0].SetSpawnPoint(true);
 		m_roads[2][0].Frequency = 5;
 		m_roads[2][0].SetSign(SignType.RIGHT);
-		//m_roads[2][0].SignVisible = false;
 		m_roads[2][0].SignRemoveable = false;
+		
+		m_roads[3][3].SetSign(SignType.UP);
+		m_roads[3][3].SignRemoveable = false;
 	}
 
 	public RoadManager()

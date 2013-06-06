@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.geom.Line2D;
 import java.io.File;
 import java.util.Random;
+import java.util.Stack;
 
 import javax.imageio.ImageIO;
 
@@ -24,7 +25,7 @@ public class Road {
 
 	// Types of signs that can be on the road
 	enum SignType {
-		NONE, STOP, STOP_AW, UP, DOWN, LEFT, RIGHT,
+		NONE, STOP, STOP_AW, REDLIGHT, GREENLIGHT, YIELD, UP, DOWN, LEFT, RIGHT
 	}
 
 	private static Image m_img = null;
@@ -35,6 +36,14 @@ public class Road {
 	public boolean m_delay = false;
 	public boolean stop_delay = false;
 	public boolean at_sign_delay = false;
+
+	public boolean car_move = false;
+
+	// IsSpawn and spawn frequency (Turn wise)
+	private int light_timer = 4;
+	private int light_length = 4;
+
+	public Stack<Integer> dirstack;
 
 	// IsSpawn and spawn frequency (Turn wise)
 	public boolean IsSpawn = false;
@@ -48,6 +57,7 @@ public class Road {
 	public boolean SignVisible = true;
 	public boolean SignRemoveable = true;
 
+	private SignType hidden_sign;
 	private SignType m_sign;
 	private static Image m_stop = null;
 	private static Image m_stopAW = null;
@@ -56,6 +66,9 @@ public class Road {
 	private static Image m_owLeft = null;
 	private static Image m_owRight = null;
 	private static Image m_carImg = null;
+	private static Image m_stoplight = null;
+	private static Image m_yield = null;
+	private static Image m_explosionImg = null;
 
 	private Image m_currentSign = null;
 
@@ -78,13 +91,18 @@ public class Road {
 			m_stopAW = LoadImage("Images/stop_allway.png");
 		if (m_owUp == null)
 			m_owUp = LoadImage("Images/oneway_up.png");
+		if (m_stoplight == null)
+			m_stoplight = LoadImage("Images/traffic_light.png");
+		if (m_yield == null)
+			m_yield = LoadImage("Images/yield.png");
 		if (m_owDown == null)
 			m_owDown = LoadImage("Images/oneway_down.png");
 		if (m_owLeft == null)
 			m_owLeft = LoadImage("Images/oneway_left.png");
 		if (m_owRight == null)
 			m_owRight = LoadImage("Images/oneway_right.png");
-
+		if (m_explosionImg == null)
+			m_explosionImg = LoadImage("Images/Explosion.png");
 		if (m_carImg == null)
 			m_carImg = LoadImage("Images/Car120_strip.png");
 
@@ -95,6 +113,8 @@ public class Road {
 		m_position.y = pos.y * RoadManager.TILE_SIZE;
 		m_sign = SignType.NONE;
 		m_manager = manager;
+
+		dirstack = new Stack<Integer>();
 
 		m_type = type;
 		// Initialize logic for the instructions of the type
@@ -205,6 +225,9 @@ public class Road {
 			break;
 		}
 
+		int SIGNWIDTH = 60;
+		int SIGNHEIGHT = 80;
+
 		// Source cut
 		int x_pos = x_offset * RoadManager.TILE_SIZE;
 		int y_pos = m_rotation * RoadManager.TILE_SIZE;
@@ -229,7 +252,13 @@ public class Road {
 		// Draws the road
 		g.drawImage(m_img, m_position.x, m_position.y, m_position.x + RoadManager.TILE_SIZE, m_position.y
 				+ RoadManager.TILE_SIZE, x_pos, y_pos, x_epos, y_epos, null);
-
+		if (m_sign == SignType.GREENLIGHT && SignVisible) {
+			g.drawImage(m_stoplight, m_position.x, m_position.y, m_position.x + SIGNWIDTH, m_position.y + SIGNWIDTH,
+					SIGNWIDTH, 0, 2 * SIGNWIDTH, SIGNHEIGHT, null);
+		} else if (m_sign == SignType.REDLIGHT && SignVisible) {
+			g.drawImage(m_stoplight, m_position.x, m_position.y, m_position.x + SIGNWIDTH, m_position.y + SIGNWIDTH, 0,
+					0, SIGNWIDTH, SIGNHEIGHT, null);
+		}
 		// Draw the sign
 		if (m_currentSign != null) {
 			if (SignVisible)
@@ -241,8 +270,9 @@ public class Road {
 					+ RoadManager.TILE_SIZE, x_pos2, 0, x_epos2, RoadManager.TILE_SIZE, null);
 
 		if (Explosion) {
-			System.out.println("Cars go Boom!");
-			Explosion = false;
+			// System.out.println("Cars go Boom!");
+			g.drawImage(m_explosionImg, m_position.x, m_position.y, null);
+			// Explosion = false;
 		}
 
 	}
@@ -278,6 +308,9 @@ public class Road {
 		case STOP_AW:
 			m_currentSign = m_stopAW;
 			break;
+		case YIELD:
+			m_currentSign = m_yield;
+			break;
 		case UP:
 			m_currentSign = m_owUp;
 			// Set UP as OUT and all others to IN
@@ -285,6 +318,7 @@ public class Road {
 			m_rCon.SetAsInput();
 			m_dCon.SetAsInput();
 			m_lCon.SetAsInput();
+			dirstack.clear();
 			break;
 		case DOWN:
 			m_currentSign = m_owDown;
@@ -293,6 +327,7 @@ public class Road {
 			m_rCon.SetAsInput();
 			m_uCon.SetAsInput();
 			m_lCon.SetAsInput();
+			dirstack.clear();
 			break;
 		case LEFT:
 			m_currentSign = m_owLeft;
@@ -300,6 +335,7 @@ public class Road {
 			m_rCon.SetAsInput();
 			m_uCon.SetAsInput();
 			m_dCon.SetAsInput();
+			dirstack.clear();
 			break;
 		case RIGHT:
 			m_currentSign = m_owRight;
@@ -307,9 +343,11 @@ public class Road {
 			m_dCon.SetAsInput();
 			m_uCon.SetAsInput();
 			m_lCon.SetAsInput();
+			dirstack.clear();
 			break;
 		default:
 			m_currentSign = null;
+			dirstack.clear();
 			// Reset connections for tile once we destroy a sign
 			PopulateConnections();
 			break;
@@ -326,7 +364,7 @@ public class Road {
 		// "," + m_tilePos.y);
 
 		Road road = null;
-
+		
 		if (m_uCon.Type == ConType.OUT) {
 			// System.out.println("UP: OUT");
 			road = m_manager.GetRoad(m_tilePos.x, m_tilePos.y - 1);
@@ -493,7 +531,9 @@ public class Road {
 
 			if (!LROccupied && !RROccupied && !NROccupied) {
 				stop_delay = false;
-				System.out.println("The car at " + m_tilePos.x + " " + m_tilePos.y + "is free to go");
+				System.out.println("The car at " + m_tilePos.x + " " + m_tilePos.y + " is free to go");
+			} else{
+				System.out.println("waiting at stopsign");
 			}
 			// else
 			// System.out.println("The car at " + m_tilePos.x + " " +
@@ -520,6 +560,7 @@ public class Road {
 			// If driving into a pileup, become one with the pileup.
 			if (Occupied == true && nextRoad.Explosion == true) {
 				Occupied = false;
+				car_move = false;
 				// System.out.println("Diving into the fray");
 			}
 
@@ -527,6 +568,7 @@ public class Road {
 				// End of map, let cars go
 				// System.out.println("Car leaving the map");
 				Occupied = false;
+				car_move = false;
 			}
 			// You don't hit a guy waiting at a stop sign
 			else if (Occupied == true && nextRoad.Occupied == true && nextRoad.m_sign == SignType.STOP) {
@@ -540,6 +582,7 @@ public class Road {
 				// " " + m_tilePos.y);
 				Explosion = true;
 				Occupied = false;
+				car_move = false;
 				nextRoad.Occupied = false;
 			}
 			// If the guy in front of you is waiting on someone, wait on him
@@ -552,6 +595,16 @@ public class Road {
 			{
 				nextRoad.Occupied = true;
 				Occupied = false;
+				car_move = false;
+				//if you move onto a tile, add its in connection to its dirstack
+				if(nextRoad.m_tilePos.x == m_tilePos.x + 1) //going right
+					nextRoad.dirstack.push(new Integer(2)); //push left
+				else if (nextRoad.m_tilePos.x == m_tilePos.x - 1)
+					nextRoad.dirstack.push(new Integer(4)); //going left, push right
+				else if (nextRoad.m_tilePos.y == m_tilePos.y + 1)
+					nextRoad.dirstack.push(new Integer(1)); //going up, push down
+				else if (nextRoad.m_tilePos.y == m_tilePos.y - 1)
+					nextRoad.dirstack.push(new Integer(3)); //going down, push up	
 				// System.out.println("Delaying " + nextRoad.m_tilePos.x + " " +
 				// nextRoad.m_tilePos.y);
 				if (nextRoad.m_tilePos.y > m_tilePos.y)
@@ -581,9 +634,29 @@ public class Road {
 
 		// The road is messed. Re-populate connections to standard form
 		if (count == 4) {
-			// System.out.println("Repopulating road: " + m_tilePos.x + "," +
-			// m_tilePos.y);
-			// PopulateConnections();
+			int ds;
+			System.out.println("Repopulating road: " + m_tilePos.x + "," + m_tilePos.y);
+			System.out.println("Dirstack is: " + dirstack.toString());
+
+			PopulateConnections();
+			
+			while(!dirstack.isEmpty()) {
+				ds = dirstack.pop();
+				switch(ds) {
+				case 1:
+					m_uCon.Type = ConType.IN;
+					break;
+				case 2:
+					m_rCon.Type = ConType.IN;
+					break;
+				case 3:
+					m_dCon.Type = ConType.IN;
+					break;
+				case 4:
+					m_rCon.Type = ConType.IN;
+					break;
+				}
+			}
 		}
 	}
 
@@ -661,6 +734,8 @@ public class Road {
 		System.out.println("Down Connection is: " + m_dCon.ToString());
 		System.out.println("Left Connection is: " + m_lCon.ToString());
 		System.out.println("Right Connection is: " + m_rCon.ToString());
+		System.out.println("Dirstack is: " + dirstack.toString());
+
 	}
 
 	/**

@@ -26,6 +26,8 @@ public class TrafficScene extends GameScene {
 	
 	private Button m_stopBtn;
 	private Button m_stopAWBtn;
+	private Button m_stoplightBtn;
+	private Button m_yieldBtn;
 	private Button m_owRightBtn;
 	private Button m_owLeftBtn;
 	private Button m_owUpBtn;
@@ -56,10 +58,12 @@ public class TrafficScene extends GameScene {
 		
 		m_stopBtn = new Button("Stop", "Images/stop_btn.png", new Point(610, 30));
 		m_stopAWBtn = new Button("Stop AW", "Images/stopaw_btn.png", new Point(710, 30));
-		m_owRightBtn = new Button("OW Right", "Images/ow_right_btn.png", new Point(610, 200));
-		m_owLeftBtn = new Button("OW Left", "Images/ow_left_btn.png", new Point(710, 200));
-		m_owUpBtn = new Button("OW Up", "Images/ow_up_btn.png", new Point(610, 300));
-		m_owDownBtn = new Button("OW Down", "Images/ow_down_btn.png", new Point(710, 300));
+		m_stoplightBtn = new Button("Stop Light", "Images/traffic_light_btn.png", new Point(610, 130));
+		m_yieldBtn = new Button("Yield", "Images/yield_btn.png", new Point(710, 130));
+		m_owRightBtn = new Button("OW Right", "Images/ow_right_btn.png", new Point(610, 230));
+		m_owLeftBtn = new Button("OW Left", "Images/ow_left_btn.png", new Point(710, 230));
+		m_owUpBtn = new Button("OW Up", "Images/ow_up_btn.png", new Point(610, 330));
+		m_owDownBtn = new Button("OW Down", "Images/ow_down_btn.png", new Point(710, 330));
 		m_nextBtn = new Button("Next Turn", "Images/next_btn.png", new Point(660, 450));
 	}
 
@@ -73,6 +77,8 @@ public class TrafficScene extends GameScene {
 		
 		m_stopBtn.paint(g);
 		m_stopAWBtn.paint(g);
+		m_stoplightBtn.paint(g);
+		m_yieldBtn.paint(g);
 		m_owRightBtn.paint(g);
 		m_owLeftBtn.paint(g);
 		m_owUpBtn.paint(g);
@@ -146,7 +152,17 @@ public class TrafficScene extends GameScene {
 			{
 				m_signSelected = SignType.STOP_AW;
 			}
+			
+			if (m_stoplightBtn.IsClicked(e.getPoint()))
+			{
+				m_signSelected = SignType.REDLIGHT;
+			}
 
+			if (m_yieldBtn.IsClicked(e.getPoint()))
+			{
+				m_signSelected = SignType.YIELD;
+			}
+			
 			if (m_owUpBtn.IsClicked(e.getPoint()))
 			{
 				m_signSelected = SignType.UP;
