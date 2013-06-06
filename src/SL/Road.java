@@ -69,6 +69,7 @@ public class Road {
 	private static Image m_stoplight = null;
 	private static Image m_yield = null;
 	private static Image m_explosionImg = null;
+	private static Image m_spawnImg = null;
 
 	private Image m_currentSign = null;
 
@@ -105,6 +106,8 @@ public class Road {
 			m_explosionImg = LoadImage("Images/Explosion.png");
 		if (m_carImg == null)
 			m_carImg = LoadImage("Images/Car120_strip.png");
+		if (m_spawnImg == null)
+			m_spawnImg = LoadImage("Images/parking_lot.png");
 
 		m_rotation = rot;
 		m_position = new Point();
@@ -252,6 +255,10 @@ public class Road {
 		// Draws the road
 		g.drawImage(m_img, m_position.x, m_position.y, m_position.x + RoadManager.TILE_SIZE, m_position.y
 				+ RoadManager.TILE_SIZE, x_pos, y_pos, x_epos, y_epos, null);
+		
+		if(IsSpawn)
+			g.drawImage(m_spawnImg, m_position.x, m_position.y, null);
+		
 		if (m_sign == SignType.GREENLIGHT && SignVisible) {
 			g.drawImage(m_stoplight, m_position.x, m_position.y, m_position.x + SIGNWIDTH, m_position.y + SIGNWIDTH,
 					SIGNWIDTH, 0, 2 * SIGNWIDTH, SIGNHEIGHT, null);
@@ -438,7 +445,7 @@ public class Road {
 	 * Processes where the car needs to go
 	 */
 	private void ProcessCarMovement() {
-		Explosion = false;
+		//Explosion = false;
 		if (!Occupied) {
 			m_delay = false;
 			return;
@@ -576,6 +583,7 @@ public class Road {
 				//System.out.println("Car leaving the map");
 				Occupied = false;
 				car_move = false;
+				m_manager.cars_saved++;
 			}
 			//You don't hit a guy waiting at a stop sign
 			else if(Occupied == true && nextRoad.Occupied == true && (nextRoad.m_sign == SignType.STOP)) {

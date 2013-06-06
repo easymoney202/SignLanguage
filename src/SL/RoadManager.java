@@ -19,28 +19,80 @@ public class RoadManager {
 	public static int TILE_SIZE = 120;
 	public static int TILE_W = 5;
 	public static int TILE_H = 5;
+	private static int LEVEL_COUNT = 1;
+	private int level[][];
+	public int cars_saved = 0;
+	private int till_next_level = 10;
 
 	// 0 - Nothing
-	// 1-2 - Straight
+	// 1-4 - Straight
 	// 5-8 - Curve
 	// 9-12 - Intersection 3
 	// 13 - Intersection 4
-	private int level[][] = {
+	private int level1[][] = {
 			{1,9,5,2,0},
 			{0,2,2,2,0},
 			{1,10,7,13,1},
 			{0,12,1,10,0},
-			{0,2,0,2,0}};
+			{0,2,0,2,0}
+	};
+	private int level2[][] = {
+			{1,9,5,2,0},
+			{0,2,2,2,0},
+			{0,2,7,13,5},
+			{0,2,0,2,2},
+			{0,2,0,2,2}
+	};
+	private int level3[][] = {
+			{0,0,2,0,0},
+			{1,9,13,9,1},
+			{0,12,13,10,0},
+			{1,11,13,11,1},
+			{0,0,2,0,0}
+	};
+	
 	
 	private Road m_roads[][];
 	
 	public int CurrentTurn = 0;
 
+	private void ClearRoads() {
+		for (int y = 0; y < TILE_H; y++)
+		{
+			for (int x = 0; x < TILE_W; x++)
+			{
+				if(m_roads[y][x]!= null)
+					m_roads[y][x] = null;
+			}
+		}
+	}
+	
+	private void ClearExplosions() {
+		for (int y = 0; y < TILE_H; y++)
+		{
+			for (int x = 0; x < TILE_W; x++)
+			{
+				if(m_roads[y][x]!= null) {
+					if(m_roads[y][x].Explosion == true)
+						m_roads[y][x].Explosion = false;
+				}
+			}
+		}
+	}
+	
 	/**
 	 * Generates all roads based on the level array
 	 */
 	public void GenerateLevel()
 	{
+		ClearRoads();
+		if(LEVEL_COUNT == 1)
+			level = level1;
+		if(LEVEL_COUNT == 2)
+			level = level2;
+		if(LEVEL_COUNT == 3)
+			level = level3;
+		
 		for (int y = 0; y < TILE_H; y++)
 		{
 			for (int x = 0; x < TILE_W; x++)
@@ -76,21 +128,57 @@ public class RoadManager {
 				}
 			}
 		}
+		if(LEVEL_COUNT == 1) {
+			// Set the top tile as spawn point to test
+			m_roads[0][0].SetSpawnPoint(true);
+			m_roads[0][0].Frequency = 3;
+			m_roads[0][0].SetSign(SignType.RIGHT);
+			//m_roads[0][0].SignVisible = false;
+			m_roads[0][0].SignRemoveable = false;
 		
-		// Set the top tile as spawn point to test
-		m_roads[0][0].SetSpawnPoint(true);
-		m_roads[0][0].Frequency = 3;
-		m_roads[0][0].SetSign(SignType.RIGHT);
-		//m_roads[0][0].SignVisible = false;
-		m_roads[0][0].SignRemoveable = false;
+			m_roads[2][0].SetSpawnPoint(true);
+			m_roads[2][0].Frequency = 5;
+			m_roads[2][0].SetSign(SignType.RIGHT);
+			m_roads[2][0].SignRemoveable = false;
 		
-		m_roads[2][0].SetSpawnPoint(true);
-		m_roads[2][0].Frequency = 5;
-		m_roads[2][0].SetSign(SignType.RIGHT);
-		m_roads[2][0].SignRemoveable = false;
+			m_roads[3][3].SetSign(SignType.UP);
+			m_roads[3][3].SignRemoveable = false;
+		}
+		if(LEVEL_COUNT == 2) {
+			// Set the top tile as spawn point to test
+			m_roads[0][0].SetSpawnPoint(true);
+			m_roads[0][0].Frequency = 3;
+			m_roads[0][0].SetSign(SignType.RIGHT);
+			m_roads[0][0].SignRemoveable = false; 
+			m_roads[0][3].SetSpawnPoint(true);
+			m_roads[0][3].Frequency = 3;
+			m_roads[0][3].SetSign(SignType.DOWN);
+			m_roads[0][3].SignRemoveable = false;
+		}
+		if(LEVEL_COUNT == 3) {
+			// Set the top tile as spawn point to test
+			m_roads[0][2].SetSpawnPoint(true);
+			m_roads[0][2].Frequency = 3;
+			m_roads[0][2].SetSign(SignType.DOWN);
+			m_roads[0][2].SignRemoveable = false; 
+			m_roads[1][0].SetSpawnPoint(true);
+			m_roads[1][0].Frequency = 3;
+			m_roads[1][0].SetSign(SignType.RIGHT);
+			m_roads[1][0].SignRemoveable = false;
+			m_roads[1][4].SetSpawnPoint(true);
+			m_roads[1][4].Frequency = 3;
+			m_roads[1][4].SetSign(SignType.LEFT);
+			m_roads[1][4].SignRemoveable = false;
+			m_roads[3][0].SetSpawnPoint(true);
+			m_roads[3][0].Frequency = 3;
+			m_roads[3][0].SetSign(SignType.RIGHT);
+			m_roads[3][0].SignRemoveable = false;
+			m_roads[3][4].SetSpawnPoint(true);
+			m_roads[3][4].Frequency = 3;
+			m_roads[3][4].SetSign(SignType.LEFT);
+			m_roads[3][4].SignRemoveable = false; 
+		}
 		
-		m_roads[3][3].SetSign(SignType.UP);
-		m_roads[3][3].SignRemoveable = false;
 	}
 
 	public RoadManager()
@@ -156,6 +244,7 @@ public class RoadManager {
 	 */
 	public void ProcessTurn()
 	{
+		ClearExplosions();
 		for (int i = 0; i < TILE_H; i++)
 		{
 			for (int j = 0; j < TILE_W; j++)
@@ -167,9 +256,18 @@ public class RoadManager {
 				}
 			}
 		}
-		
 		// Add one to the current turn
 		CurrentTurn++;
+		// Check if the level is beat
+		if(cars_saved >= till_next_level){
+			cars_saved = 0;
+			CurrentTurn = 0;
+			LEVEL_COUNT++;
+			if(LEVEL_COUNT > 3)
+				LEVEL_COUNT = 1;
+			GenerateLevel();
+		}
+			
 	}
 
 	/**
