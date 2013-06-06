@@ -1,9 +1,7 @@
 package SL;
 
 import java.awt.*;
-import java.awt.geom.Line2D;
 import java.io.File;
-import java.util.Random;
 import java.util.Stack;
 
 import javax.imageio.ImageIO;
@@ -28,6 +26,8 @@ public class Road {
 		NONE, STOP, STOP_AW, REDLIGHT, GREENLIGHT, YIELD, UP, DOWN, LEFT, RIGHT
 	}
 
+	private Car m_car = null;
+
 	private static Image m_img = null;
 	private Point m_position;
 	private Point m_tilePos;
@@ -49,7 +49,6 @@ public class Road {
 	public boolean IsSpawn = false;
 	public int Frequency = 5;
 
-	public boolean Occupied = false;
 	public boolean Explosion = false;
 	public boolean HasSign = false;
 	// This is used for when we want spawn points to be "OneWay" but no sign is
@@ -57,7 +56,7 @@ public class Road {
 	public boolean SignVisible = true;
 	public boolean SignRemoveable = true;
 
-	private SignType hidden_sign;
+	private SignType move_sign;
 	private SignType m_sign;
 	private static Image m_stop = null;
 	private static Image m_stopAW = null;
@@ -72,6 +71,7 @@ public class Road {
 	private static Image m_spawnImg = null;
 
 	private Image m_currentSign = null;
+	private Image m_currentMoveSign = null;
 
 	private Connection m_uCon, m_dCon, m_lCon, m_rCon;
 
@@ -255,10 +255,10 @@ public class Road {
 		// Draws the road
 		g.drawImage(m_img, m_position.x, m_position.y, m_position.x + RoadManager.TILE_SIZE, m_position.y
 				+ RoadManager.TILE_SIZE, x_pos, y_pos, x_epos, y_epos, null);
-		
-		if(IsSpawn)
+
+		if (IsSpawn)
 			g.drawImage(m_spawnImg, m_position.x, m_position.y, null);
-		
+
 		if (m_sign == SignType.GREENLIGHT && SignVisible) {
 			g.drawImage(m_stoplight, m_position.x, m_position.y, m_position.x + SIGNWIDTH, m_position.y + SIGNWIDTH,
 					SIGNWIDTH, 0, 2 * SIGNWIDTH, SIGNHEIGHT, null);
@@ -271,8 +271,12 @@ public class Road {
 			if (SignVisible)
 				g.drawImage(m_currentSign, m_position.x, m_position.y, null);
 		}
+		if (m_currentMoveSign != null) {
+			if (SignVisible)
+				g.drawImage(m_currentMoveSign, m_position.x + 80, m_position.y, null);
+		}
 
-		if (Occupied)
+		if (isOccupied())
 			g.drawImage(m_carImg, m_position.x, m_position.y, m_position.x + RoadManager.TILE_SIZE, m_position.y
 					+ RoadManager.TILE_SIZE, x_pos2, 0, x_epos2, RoadManager.TILE_SIZE, null);
 
@@ -299,10 +303,14 @@ public class Road {
 
 	// Sets a sign to the road
 	public void SetSign(SignType sign) {
-		if (m_sign == sign)
+		if (m_sign == sign || move_sign == sign)
 			return;
 
-		m_sign = sign;
+		if (sign == SignType.STOP || sign == SignType.STOP_AW || sign == SignType.REDLIGHT
+				|| sign == SignType.GREENLIGHT || sign == SignType.YIELD)
+			m_sign = sign;
+		else
+			move_sign = sign;
 
 		if (sign != SignType.NONE)
 			HasSign = true;
@@ -371,7 +379,7 @@ public class Road {
 		// "," + m_tilePos.y);
 
 		Road road = null;
-		
+
 		if (m_uCon.Type == ConType.OUT) {
 			// System.out.println("UP: OUT");
 			road = m_manager.GetRoad(m_tilePos.x, m_tilePos.y - 1);
@@ -445,8 +453,8 @@ public class Road {
 	 * Processes where the car needs to go
 	 */
 	private void ProcessCarMovement() {
-		//Explosion = false;
-		if (!Occupied) {
+		// Explosion = false;
+		if (!isOccupied()) {
 			m_delay = false;
 			return;
 		}
@@ -465,7 +473,7 @@ public class Road {
 			nextRoad = m_manager.GetRoad(m_tilePos.x, m_tilePos.y - 1);
 			leftRoad = m_manager.GetRoad(m_tilePos.x - 1, m_tilePos.y - 1);
 			rightRoad = m_manager.GetRoad(m_tilePos.x + 1, m_tilePos.y - 1);
-			if(nextRoad != null) {
+			if (nextRoad != null) {
 				nextRoad.m_dCon.Type = ConType.IN;
 			}
 			break;
@@ -473,7 +481,7 @@ public class Road {
 			nextRoad = m_manager.GetRoad(m_tilePos.x, m_tilePos.y + 1);
 			leftRoad = m_manager.GetRoad(m_tilePos.x - 1, m_tilePos.y + 1);
 			rightRoad = m_manager.GetRoad(m_tilePos.x + 1, m_tilePos.y + 1);
-			if(nextRoad != null) {
+			if (nextRoad != null) {
 				nextRoad.m_uCon.Type = ConType.IN;
 			}
 			break;
@@ -481,7 +489,7 @@ public class Road {
 			nextRoad = m_manager.GetRoad(m_tilePos.x - 1, m_tilePos.y);
 			leftRoad = m_manager.GetRoad(m_tilePos.x - 1, m_tilePos.y + 1);
 			rightRoad = m_manager.GetRoad(m_tilePos.x - 1, m_tilePos.y - 1);
-			if(nextRoad != null) {
+			if (nextRoad != null) {
 				nextRoad.m_rCon.Type = ConType.IN;
 			}
 			break;
@@ -489,7 +497,7 @@ public class Road {
 			nextRoad = m_manager.GetRoad(m_tilePos.x + 1, m_tilePos.y);
 			leftRoad = m_manager.GetRoad(m_tilePos.x + 1, m_tilePos.y - 1);
 			rightRoad = m_manager.GetRoad(m_tilePos.x + 1, m_tilePos.y + 1);
-			if(nextRoad != null) {
+			if (nextRoad != null) {
 				nextRoad.m_lCon.Type = ConType.IN;
 			}
 		default:
@@ -499,127 +507,134 @@ public class Road {
 			// nextRoad.m_tilePos.y);
 			break;
 		}
-		
+
 		boolean LROccupied = true;
 		boolean RROccupied = true;
 		boolean NROccupied = true;
-		if(leftRoad != null) {
+		if (leftRoad != null) {
 			LROccupied = leftRoad.car_move;
-		}
-		else
+		} else
 			LROccupied = false;
-		if(rightRoad != null) {
+		if (rightRoad != null) {
 			RROccupied = rightRoad.car_move;
-		}
-		else
+		} else
 			RROccupied = false;
-		if(nextRoad != null) {
-			NROccupied = nextRoad.Occupied;
-		}
-		else
+		if (nextRoad != null) {
+			NROccupied = nextRoad.isOccupied();
+		} else
 			NROccupied = false;
-		
 
-		if(m_sign == SignType.YIELD) {
+		if (m_sign == SignType.YIELD) {
 			stop_delay = true;
 		}
-		
-		if(stop_delay) {	
-			if(!LROccupied && !RROccupied && !NROccupied) {
+
+		if (stop_delay) {
+			if (!LROccupied && !RROccupied && !NROccupied) {
 				stop_delay = false;
-				//System.out.println("The car at " + m_tilePos.x + " " + m_tilePos.y + "is free to go");
+				// System.out.println("The car at " + m_tilePos.x + " " +
+				// m_tilePos.y + "is free to go");
 			}
-			//else
-				//System.out.println("The car at " + m_tilePos.x + " " + m_tilePos.y + "is blocked");			
-		}
-		else if(nextRoad.m_sign == SignType.STOP_AW && !at_sign_delay) {
+			// else
+			// System.out.println("The car at " + m_tilePos.x + " " +
+			// m_tilePos.y + "is blocked");
+		} else if (nextRoad.m_sign == SignType.STOP_AW && !at_sign_delay) {
 			at_sign_delay = true;
 			stop_delay = true;
 			car_move = true;
-		}
-		else if(at_sign_delay) {
-			//at_sign_delay = false;
+		} else if (at_sign_delay) {
+			// at_sign_delay = false;
 			stop_delay = true;
 			car_move = true;
-			//System.out.println("The car at " + m_tilePos.x + " " + m_tilePos.y + "is stopping");
+			// System.out.println("The car at " + m_tilePos.x + " " +
+			// m_tilePos.y + "is stopping");
 		}
-		//Shouldn't ever run a stop sign into a dude
-		else if(NROccupied && (m_sign == SignType.STOP)){
-	    	stop_delay = true;
-		}
-		//If traveling vertically, a redlight is actually a red light
-		if(nextRoad.m_sign == SignType.REDLIGHT &&
-				(nextRoad.m_tilePos.y == m_tilePos.y + 1 || nextRoad.m_tilePos.y == m_tilePos.y - 1)){
+		// Shouldn't ever run a stop sign into a dude
+		else if (NROccupied && (m_sign == SignType.STOP)) {
 			stop_delay = true;
 		}
-		//If traveling vertically, a greenlight is actually a red light
-		if(nextRoad.m_sign == SignType.GREENLIGHT &&
-				(nextRoad.m_tilePos.x == m_tilePos.x + 1 || nextRoad.m_tilePos.x == m_tilePos.x - 1)){
+		// If traveling vertically, a redlight is actually a red light
+		if (nextRoad.m_sign == SignType.REDLIGHT
+				&& (nextRoad.m_tilePos.y == m_tilePos.y + 1 || nextRoad.m_tilePos.y == m_tilePos.y - 1)) {
 			stop_delay = true;
 		}
-		
+		// If traveling vertically, a greenlight is actually a red light
+		if (nextRoad.m_sign == SignType.GREENLIGHT
+				&& (nextRoad.m_tilePos.x == m_tilePos.x + 1 || nextRoad.m_tilePos.x == m_tilePos.x - 1)) {
+			stop_delay = true;
+		}
+
 		// Move "car"
 		// for great justice
 		if (nextRoad == null) {
-			Occupied = false;
-			//System.out.println("nextRoad is null at " + m_tilePos.x + " " + m_tilePos.y);
-			//TODO: Car blows up offscreen
+			setCar(null);
+			// System.out.println("nextRoad is null at " + m_tilePos.x + " " +
+			// m_tilePos.y);
+			// TODO: Car blows up offscreen
 		}
 		// If we're at a stop sign, need to look to the left and right of next
 		// road for occupation
 		else if (!stop_delay) {
 
 			// If driving into a pileup, become one with the pileup.
-			if (Occupied == true && nextRoad.Explosion == true) {
-				Occupied = false;
+			if (isOccupied() == true && nextRoad.Explosion == true) {
+				setCar(null);
 				car_move = false;
-				//System.out.println("Diving into the fray");
+				// System.out.println("Diving into the fray");
 			}
 
 			else if (nextRoad != null && nextRoad.m_tilePos == this.m_tilePos) {
 				// End of map, let cars go
-				//System.out.println("Car leaving the map");
-				Occupied = false;
+				// System.out.println("Car leaving the map");
+				setCar(null);
 				car_move = false;
 				m_manager.cars_saved++;
 			}
-			//You don't hit a guy waiting at a stop sign
-			else if(Occupied == true && nextRoad.Occupied == true && (nextRoad.m_sign == SignType.STOP)) {
+			// You don't hit a guy waiting at a stop sign
+			else if (isOccupied() == true && nextRoad.isOccupied() == true && (nextRoad.m_sign == SignType.STOP)) {
 				stop_delay = true;
-				//System.out.println("Waiting for a guy at " + m_tilePos.x + " " + m_tilePos.y);
+				// System.out.println("Waiting for a guy at " + m_tilePos.x +
+				// " " + m_tilePos.y);
 			}
-			//If he ent waiting for someone, he's fair game
-			else if(Occupied == true && nextRoad.Occupied == true && nextRoad.stop_delay == false) {
-				//System.out.println("Found a collision at " + m_tilePos.x + " " + m_tilePos.y);
+			// If he ent waiting for someone, he's fair game
+			else if (isOccupied() == true && nextRoad.isOccupied() == true && nextRoad.stop_delay == false) {
+				// System.out.println("Found a collision at " + m_tilePos.x +
+				// " " + m_tilePos.y);
 				nextRoad.Explosion = true;
-				Occupied = false;
+				getCar().dispose();
 				car_move = false;
-				nextRoad.Occupied = false;
+				nextRoad.getCar().dispose();
 			}
-			//If the guy in front of you is waiting on someone, wait on him
-			else if(Occupied == true && nextRoad.Occupied == true && nextRoad.stop_delay == true) {
-				//System.out.println("Waiting for a guy waiting for a guy at " + m_tilePos.x + " " + m_tilePos.y);
+			// If the guy in front of you is waiting on someone, wait on him
+			else if (isOccupied() && nextRoad.isOccupied() && nextRoad.stop_delay == true) {
+				// System.out.println("Waiting for a guy waiting for a guy at "
+				// + m_tilePos.x + " " + m_tilePos.y);
 				stop_delay = true;
 			}
 
-			else //if (Explosion == false && nextRoad != null && nextRoad.Occupied == false)
+			else // if (Explosion == false && nextRoad != null &&
+					// nextRoad.Occupied == false)
 			{
-				nextRoad.Occupied = true;
-				//nextRoad.car_move = true;
-				Occupied = false;
+				getCar().move(nextRoad);
+				// nextRoad.car_move = true;
+				setCar(null);
 				car_move = false;
-				//if you move onto a tile, add its in connection to its dirstack
-				if(nextRoad.m_tilePos.x == m_tilePos.x + 1) //going right
-					nextRoad.dirstack.push(new Integer(2)); //push left
+				// if you move onto a tile, add its in connection to its
+				// dirstack
+				if (nextRoad.m_tilePos.x == m_tilePos.x + 1) // going right
+					nextRoad.dirstack.push(new Integer(2)); // push left
 				else if (nextRoad.m_tilePos.x == m_tilePos.x - 1)
-					nextRoad.dirstack.push(new Integer(4)); //going left, push right
+					nextRoad.dirstack.push(new Integer(4)); // going left, push
+															// right
 				else if (nextRoad.m_tilePos.y == m_tilePos.y + 1)
-					nextRoad.dirstack.push(new Integer(1)); //going up, push down
+					nextRoad.dirstack.push(new Integer(1)); // going up, push
+															// down
 				else if (nextRoad.m_tilePos.y == m_tilePos.y - 1)
-					nextRoad.dirstack.push(new Integer(3)); //going down, push up	
-				
-				//System.out.println("Delaying " + nextRoad.m_tilePos.x + " " + nextRoad.m_tilePos.y);
-				if(nextRoad.m_tilePos.y > m_tilePos.y)
+					nextRoad.dirstack.push(new Integer(3)); // going down, push
+															// up
+
+				// System.out.println("Delaying " + nextRoad.m_tilePos.x + " " +
+				// nextRoad.m_tilePos.y);
+				if (nextRoad.m_tilePos.y > m_tilePos.y)
 					nextRoad.DelayTurn();
 				else if (nextRoad.m_tilePos.y == m_tilePos.y && nextRoad.m_tilePos.x > m_tilePos.x)
 					nextRoad.DelayTurn();
@@ -650,10 +665,10 @@ public class Road {
 			System.out.println("Dirstack is: " + dirstack.toString());
 
 			PopulateConnections();
-			
-			while(!dirstack.isEmpty()) {
+
+			while (!dirstack.isEmpty()) {
 				ds = dirstack.pop();
-				switch(ds) {
+				switch (ds) {
 				case 1:
 					m_uCon.Type = ConType.IN;
 					break;
@@ -674,33 +689,27 @@ public class Road {
 	/**
 	 * Processes a turn for the cars movement and sign control
 	 */
-	public void ProcessTurn()
-	{
+	public void ProcessTurn() {
 		SanityCheck();
-		if(m_sign == SignType.REDLIGHT) {
+		if (m_sign == SignType.REDLIGHT) {
 			light_timer--;
-			if(light_timer == 0) {
+			if (light_timer == 0) {
 				m_sign = SignType.GREENLIGHT;
 				light_timer = light_length;
 			}
-		}
-		else if(m_sign == SignType.GREENLIGHT) {
+		} else if (m_sign == SignType.GREENLIGHT) {
 			light_timer--;
-			if(light_timer == 0) {
+			if (light_timer == 0) {
 				m_sign = SignType.REDLIGHT;
 				light_timer = light_length;
 			}
 		}
-		
-		if (IsSpawn)
-		{
-			if (m_manager.CurrentTurn % Frequency == 0)
-			{
-				if (!Occupied)
-				{
-					// This turn we should spawn a car
-					Occupied = true;
 
+		if (IsSpawn) {
+			if (m_manager.CurrentTurn % Frequency == 0) {
+				if (!isOccupied()) {
+					// This turn we should spawn a car
+					setCar(new Car(this, m_tilePos.x, m_tilePos.y, m_rotation));
 					System.out.println("Car has spawned!");
 				}
 				// TO-DO: Add car creation
@@ -708,8 +717,7 @@ public class Road {
 				// If we are delaying for STOP sign
 				// then return this turn
 
-				if (m_delay)
-				{
+				if (m_delay) {
 					System.out.println("m_delay break");
 					m_delay = false;
 					return;
@@ -717,10 +725,9 @@ public class Road {
 				if (at_sign_delay) {
 					at_sign_delay = false;
 					System.out.println("Resetting ASD");
-				}
-				else if (Occupied == true && (m_sign == SignType.STOP) && !m_delay)
-				{
-					//System.out.println("Found a stop sign at " + m_tilePos.x + " " + m_tilePos.y);
+				} else if (isOccupied() == true && (m_sign == SignType.STOP) && !m_delay) {
+					// System.out.println("Found a stop sign at " + m_tilePos.x
+					// + " " + m_tilePos.y);
 					at_sign_delay = true;
 				}
 
@@ -739,16 +746,15 @@ public class Road {
 			}
 			if (at_sign_delay)
 				at_sign_delay = false;
-			
-			else if (Occupied == true && (m_sign == SignType.STOP) && !m_delay)
-			{
+
+			else if (isOccupied() && (m_sign == SignType.STOP) && !m_delay) {
 				System.out.println("Found a stop sign at " + m_tilePos.x + " " + m_tilePos.y);
 				at_sign_delay = true;
 			}
 
 			// Move car here
 			ProcessCarMovement();
-			
+
 		}
 
 		SanityCheck();
@@ -784,5 +790,17 @@ public class Road {
 			}
 		}
 		return false;
+	}
+
+	public void setCar(Car c) {
+		m_car = c;
+	}
+
+	public Car getCar() {
+		return m_car;
+	}
+
+	public boolean isOccupied() {
+		return (m_car != null);
 	}
 }
