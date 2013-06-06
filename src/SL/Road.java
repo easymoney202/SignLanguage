@@ -212,7 +212,7 @@ public class Road {
 		int y_epos = y_pos + RoadManager.TILE_SIZE;
 
 		int m_rotation2 = 0;
-		if (m_rotation == 0) { 
+		if (m_rotation == 0) {
 			m_rotation2 = 0;
 		} else if (m_rotation == 1) {
 			m_rotation2 = 1;
@@ -417,32 +417,55 @@ public class Road {
 		// so that the roads give a standard direction to those cars
 		switch (m_sign) {
 		case UP:
-			nextRoad = m_manager.GetRoad(m_tilePos.x, m_tilePos.y - 1);
-			leftRoad = m_manager.GetRoad(m_tilePos.x - 1, m_tilePos.y - 1);
-			rightRoad = m_manager.GetRoad(m_tilePos.x + 1, m_tilePos.y - 1);
-			if (nextRoad != null)
-				nextRoad.m_dCon.Type = ConType.IN;
+			if (!m_uCon.Type.equals(ConType.NONE)) {
+				nextRoad = m_manager.GetRoad(m_tilePos.x, m_tilePos.y - 1);
+				leftRoad = m_manager.GetRoad(m_tilePos.x - 1, m_tilePos.y - 1);
+				rightRoad = m_manager.GetRoad(m_tilePos.x + 1, m_tilePos.y - 1);
+				if (nextRoad != null)
+					nextRoad.m_dCon.Type = ConType.IN;
+			} else {
+				System.out.println("Car crashes going up");
+			}
 			break;
 		case DOWN:
-			nextRoad = m_manager.GetRoad(m_tilePos.x, m_tilePos.y + 1);
-			leftRoad = m_manager.GetRoad(m_tilePos.x - 1, m_tilePos.y + 1);
-			rightRoad = m_manager.GetRoad(m_tilePos.x + 1, m_tilePos.y + 1);
-			if (nextRoad != null)
-				nextRoad.m_uCon.Type = ConType.IN;
+			if (!m_dCon.Type.equals(ConType.NONE)) {
+				nextRoad = m_manager.GetRoad(m_tilePos.x, m_tilePos.y + 1);
+				leftRoad = m_manager.GetRoad(m_tilePos.x - 1, m_tilePos.y + 1);
+				rightRoad = m_manager.GetRoad(m_tilePos.x + 1, m_tilePos.y + 1);
+				if (nextRoad != null)
+					nextRoad.m_uCon.Type = ConType.IN;
+			} else {
+				System.out.println("Car crashes going down");
+			}
 			break;
 		case LEFT:
-			nextRoad = m_manager.GetRoad(m_tilePos.x - 1, m_tilePos.y);
-			leftRoad = m_manager.GetRoad(m_tilePos.x - 1, m_tilePos.y + 1);
-			rightRoad = m_manager.GetRoad(m_tilePos.x - 1, m_tilePos.y - 1);
-			if (nextRoad != null)
-				nextRoad.m_rCon.Type = ConType.IN;
+			if (!m_lCon.Type.equals(ConType.NONE)) {
+				nextRoad = m_manager.GetRoad(m_tilePos.x - 1, m_tilePos.y);
+				leftRoad = m_manager.GetRoad(m_tilePos.x - 1, m_tilePos.y + 1);
+				rightRoad = m_manager.GetRoad(m_tilePos.x - 1, m_tilePos.y - 1);
+				if (nextRoad != null)
+					nextRoad.m_rCon.Type = ConType.IN;
+			} else {
+				System.out.println("Car crashes going left");
+			}
 			break;
 		case RIGHT:
-			nextRoad = m_manager.GetRoad(m_tilePos.x + 1, m_tilePos.y);
-			leftRoad = m_manager.GetRoad(m_tilePos.x + 1, m_tilePos.y - 1);
-			rightRoad = m_manager.GetRoad(m_tilePos.x + 1, m_tilePos.y + 1);
-			if (nextRoad != null)
-				nextRoad.m_lCon.Type = ConType.IN;
+			if (!m_rCon.Type.equals(ConType.NONE)) {
+				nextRoad = m_manager.GetRoad(m_tilePos.x + 1, m_tilePos.y);
+				leftRoad = m_manager.GetRoad(m_tilePos.x + 1, m_tilePos.y - 1);
+				rightRoad = m_manager.GetRoad(m_tilePos.x + 1, m_tilePos.y + 1);
+				if (nextRoad != null)
+					nextRoad.m_lCon.Type = ConType.IN;
+			} else {
+				System.out.println("Car crashes going right");
+			}
+			break;
+		case STOP_AW:
+			System.out.println("I see an allway stopsign");
+			break;
+		case STOP:
+			System.out.println("I see a stop");
+			break;
 		default:
 			nextRoad = GetOutputRoad();
 			// if (nextRoad != null)
